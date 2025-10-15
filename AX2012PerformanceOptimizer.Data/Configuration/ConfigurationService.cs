@@ -9,7 +9,9 @@ namespace AX2012PerformanceOptimizer.Data.Configuration;
 public class ConfigurationService : IConfigurationService
 {
     private readonly string _configFilePath;
+    private readonly string _aiConfigFilePath;
     private List<ConnectionProfile> _profiles = new();
+    private AiConfiguration? _aiConfiguration;
 
     public ConfigurationService()
     {
@@ -17,7 +19,9 @@ public class ConfigurationService : IConfigurationService
         var appFolder = Path.Combine(appDataPath, "AX2012PerformanceOptimizer");
         Directory.CreateDirectory(appFolder);
         _configFilePath = Path.Combine(appFolder, "profiles.json");
+        _aiConfigFilePath = Path.Combine(appFolder, "ai-config.json");
         LoadProfiles();
+        LoadAiConfiguration();
     }
 
     private void LoadProfiles()
@@ -144,6 +148,40 @@ public class ConfigurationService : IConfigurationService
         }
 
         return builder.ConnectionString;
+    }
+
+    // AI Configuration Methods
+    private void LoadAiConfiguration()
+    {
+        if (File.Exists(_aiConfigFilePath))
+        {
+            var json = File.ReadAllText(_aiConfigFilePath);
+            _aiConfiguration = JsonSerializer.Deserialize<AiConfiguration>(json);
+        }
+    }
+
+    private async Task SaveAiConfigurationAsync()
+    {
+        if (_aiConfiguration != null)
+        {
+            var json = JsonSerializer.Serialize(_aiConfiguration, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+            await File.WriteAllTextAsync(_aiConfigFilePath, json);
+        }
+    }
+
+    public Task<AiConfiguration?> GetAiConfigurationAsync()
+    {
+        return Task.FromResult(_aiConfiguration);
+    }
+
+    public async Task SaveAiConfigurationAsync(AiConfiguration configuration)
+    {
+        configuration.LastUpdated = DateTime.UtcNow;
+        _aiConfiguration = configuration;
+        await SaveAiConfigurationAsync();
     }
 }
 

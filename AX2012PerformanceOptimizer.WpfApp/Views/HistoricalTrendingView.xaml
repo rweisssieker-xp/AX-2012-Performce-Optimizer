@@ -1,0 +1,166 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.HistoricalTrendingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1200">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <!-- Header -->
+            <TextBlock Text="📈 Historical Trending" FontSize="24" FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Text="Analyze performance trends over time and compare against baselines"
+                      Foreground="#757575" Margin="0,0,0,20"/>
+
+            <!-- Controls -->
+            <Border Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1"
+                   CornerRadius="10" Padding="15" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Time Range Selector -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <TextBlock Text="Time Range:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold"/>
+                        <Button Content="24 Hours" Command="{Binding ChangeTimeRangeCommand}" CommandParameter="24h"
+                               Width="90" Height="30" Margin="5,0" Background="#2196F3" Foreground="White"
+                               FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="7 Days" Command="{Binding ChangeTimeRangeCommand}" CommandParameter="7d"
+                               Width="90" Height="30" Margin="5,0" Background="#2196F3" Foreground="White"
+                               FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="30 Days" Command="{Binding ChangeTimeRangeCommand}" CommandParameter="30d"
+                               Width="90" Height="30" Margin="5,0" Background="#2196F3" Foreground="White"
+                               FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="90 Days" Command="{Binding ChangeTimeRangeCommand}" CommandParameter="90d"
+                               Width="90" Height="30" Margin="5,0" Background="#2196F3" Foreground="White"
+                               FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                    </StackPanel>
+
+                    <!-- Collection Controls -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <TextBlock Text="{Binding CollectionStatus}" VerticalAlignment="Center"
+                                  Margin="0,0,15,0" FontWeight="SemiBold"/>
+                        <Button Content="▶️ Start Collection" Command="{Binding StartCollectionCommand}"
+                               Width="150" Height="30" Margin="5,0" Background="#4CAF50" Foreground="White"
+                               FontWeight="Bold" BorderThickness="0" Cursor="Hand"
+                               IsEnabled="{Binding IsCollecting, Converter={StaticResource InverseBoolConverter}}"/>
+                        <Button Content="⏸️ Stop Collection" Command="{Binding StopCollectionCommand}"
+                               Width="150" Height="30" Margin="5,0" Background="#F44336" Foreground="White"
+                               FontWeight="Bold" BorderThickness="0" Cursor="Hand"
+                               Visibility="{Binding IsCollecting, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Trend Analysis Cards -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Active Users Trend -->
+                <Border Grid.Column="0" Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="2"
+                       CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="👥 Active Users Trend" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Current:" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding ActiveUsersTrend.CurrentValue, StringFormat='{}{0:F0}'}"
+                                          FontSize="20" FontWeight="Bold" Foreground="#0D47A1"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Average:" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding ActiveUsersTrend.AverageValue, StringFormat='{}{0:F0}'}"
+                                          FontSize="20" FontWeight="Bold" Foreground="#1976D2"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBlock Text="Trend: " FontSize="12" Foreground="#757575"/>
+                            <TextBlock Text="{Binding ActiveUsersTrend.Trend}" FontSize="12" FontWeight="Bold"/>
+                            <TextBlock Text=" (" FontSize="12" Foreground="#757575" Margin="5,0,0,0"/>
+                            <TextBlock Text="{Binding ActiveUsersTrend.ChangePercent, StringFormat='{}{0:F1}%'}"
+                                      FontSize="12" FontWeight="Bold"/>
+                            <TextBlock Text=")" FontSize="12" Foreground="#757575"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Database Size Trend -->
+                <Border Grid.Column="1" Background="#F3E5F5" BorderBrush="#9C27B0" BorderThickness="2"
+                       CornerRadius="10" Padding="15" Margin="10,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="💾 Database Size Trend" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Current (MB):" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding DatabaseSizeTrend.CurrentValue, StringFormat='{}{0:N0}'}"
+                                          FontSize="20" FontWeight="Bold" Foreground="#4A148C"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Average (MB):" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding DatabaseSizeTrend.AverageValue, StringFormat='{}{0:N0}'}"
+                                          FontSize="20" FontWeight="Bold" Foreground="#7B1FA2"/>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <TextBlock Text="Trend: " FontSize="12" Foreground="#757575"/>
+                            <TextBlock Text="{Binding DatabaseSizeTrend.Trend}" FontSize="12" FontWeight="Bold"/>
+                            <TextBlock Text=" (" FontSize="12" Foreground="#757575" Margin="5,0,0,0"/>
+                            <TextBlock Text="{Binding DatabaseSizeTrend.ChangePercent, StringFormat='{}{0:F1}%'}"
+                                      FontSize="12" FontWeight="Bold"/>
+                            <TextBlock Text=")" FontSize="12" Foreground="#757575"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Charts -->
+            <TabControl>
+                <!-- Active Users Chart -->
+                <TabItem Header="👥 Active Users">
+                    <Border Background="White" Padding="20">
+                        <lvc:CartesianChart Series="{Binding ActiveUsersSeries}" Height="350"/>
+                    </Border>
+                </TabItem>
+
+                <!-- Database Size Chart -->
+                <TabItem Header="💾 Database Size">
+                    <Border Background="White" Padding="20">
+                        <lvc:CartesianChart Series="{Binding DatabaseSizeSeries}" Height="350"/>
+                    </Border>
+                </TabItem>
+
+                <!-- Batch Jobs Chart -->
+                <TabItem Header="⏱️ Batch Jobs">
+                    <Border Background="White" Padding="20">
+                        <lvc:CartesianChart Series="{Binding BatchJobsSeries}" Height="350"/>
+                    </Border>
+                </TabItem>
+            </TabControl>
+
+            <!-- Loading Indicator -->
+            <Border Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                   Background="#80FFFFFF" Margin="0,20,0,0"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" Padding="20">
+                <StackPanel Orientation="Horizontal" Background="White">
+                    <TextBlock Text="⏳ Loading historical data..." FontSize="16" FontWeight="Bold" Margin="20"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

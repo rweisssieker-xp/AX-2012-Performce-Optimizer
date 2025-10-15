@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-rc4.3" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.122" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AX2012PerformanceOptimizer.Core\AX2012PerformanceOptimizer.Core.csproj" />
+    <ProjectReference Include="..\AX2012PerformanceOptimizer.Data\AX2012PerformanceOptimizer.Data.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AX2012PerformanceOptimizer.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AX2012PerformanceOptimizer.Charts", "AX2012PerformanceOptimizer.Charts\AX2012PerformanceOptimizer.Charts.csproj", "{D07E3DB9-428F-463B-8511-A0D97CA45224}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AX2012PerformanceOptimizer.WpfApp", "AX2012PerformanceOptimizer.WpfApp\AX2012PerformanceOptimizer.WpfApp.csproj", "{BD395330-DC8D-49A9-B596-E1FD5CD190E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{D07E3DB9-428F-463B-8511-A0D97CA45224}.Release|x64.Build.0 = Release|Any CPU
 		{D07E3DB9-428F-463B-8511-A0D97CA45224}.Release|x86.ActiveCfg = Release|Any CPU
 		{D07E3DB9-428F-463B-8511-A0D97CA45224}.Release|x86.Build.0 = Release|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Debug|x64.Build.0 = Debug|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Debug|x86.Build.0 = Debug|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Release|x64.ActiveCfg = Release|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Release|x64.Build.0 = Release|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Release|x86.ActiveCfg = Release|Any CPU
+		{BD395330-DC8D-49A9-B596-E1FD5CD190E8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

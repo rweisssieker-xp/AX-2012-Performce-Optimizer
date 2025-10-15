@@ -1,0 +1,43 @@
+﻿<Application x:Class="AX2012PerformanceOptimizer.WpfApp.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:AX2012PerformanceOptimizer.WpfApp.Converters"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Converters -->
+                <ResourceDictionary>
+                    <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                    <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+                    <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+                    <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+                </ResourceDictionary>
+                
+                <!-- Modern WPF Styles -->
+                <ResourceDictionary>
+                    <Style TargetType="Button">
+                        <Setter Property="Padding" Value="10,5"/>
+                        <Setter Property="Margin" Value="5"/>
+                        <Setter Property="MinWidth" Value="80"/>
+                    </Style>
+                    <Style TargetType="TextBox">
+                        <Setter Property="Padding" Value="5"/>
+                        <Setter Property="Margin" Value="5"/>
+                    </Style>
+                    <Style TargetType="PasswordBox">
+                        <Setter Property="Padding" Value="5"/>
+                        <Setter Property="Margin" Value="5"/>
+                    </Style>
+                    <Style TargetType="ComboBox">
+                        <Setter Property="Padding" Value="5"/>
+                        <Setter Property="Margin" Value="5"/>
+                    </Style>
+                    <Style TargetType="ListBox">
+                        <Setter Property="Margin" Value="5"/>
+                    </Style>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

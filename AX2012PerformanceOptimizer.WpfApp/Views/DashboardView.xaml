@@ -1,0 +1,159 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1200">
+    
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <!-- Header -->
+            <TextBlock Text="System Dashboard" 
+                      FontSize="24" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,20"/>
+
+            <!-- Status Message -->
+            <Border Background="#E8F5E9" 
+                   BorderBrush="#4CAF50" 
+                   BorderThickness="1" 
+                   CornerRadius="5" 
+                   Padding="15" 
+                   Margin="0,0,0,20">
+                <TextBlock Text="{Binding StatusMessage}" 
+                          FontWeight="SemiBold"/>
+            </Border>
+
+            <!-- Metrics Cards -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Active Users Card -->
+                <Border Grid.Column="0" 
+                       Background="#E3F2FD" 
+                       BorderBrush="#2196F3" 
+                       BorderThickness="2" 
+                       CornerRadius="10" 
+                       Padding="20" 
+                       Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="👥 Active Users" 
+                                  FontSize="14" 
+                                  Foreground="#1976D2" 
+                                  FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding ActiveUsers}" 
+                                  FontSize="36" 
+                                  FontWeight="Bold" 
+                                  Foreground="#0D47A1" 
+                                  Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Running Batch Jobs Card -->
+                <Border Grid.Column="1" 
+                       Background="#FFF3E0" 
+                       BorderBrush="#FF9800" 
+                       BorderThickness="2" 
+                       CornerRadius="10" 
+                       Padding="20" 
+                       Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="⏱️ Running Jobs" 
+                                  FontSize="14" 
+                                  Foreground="#F57C00" 
+                                  FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding RunningBatchJobs}" 
+                                  FontSize="36" 
+                                  FontWeight="Bold" 
+                                  Foreground="#E65100" 
+                                  Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Database Size Card -->
+                <Border Grid.Column="2" 
+                       Background="#F3E5F5" 
+                       BorderBrush="#9C27B0" 
+                       BorderThickness="2" 
+                       CornerRadius="10" 
+                       Padding="20" 
+                       Margin="0,0,10,0">
+                    <StackPanel>
+                        <TextBlock Text="💾 Database (MB)" 
+                                  FontSize="14" 
+                                  Foreground="#7B1FA2" 
+                                  FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding DatabaseSizeMB}" 
+                                  FontSize="36" 
+                                  FontWeight="Bold" 
+                                  Foreground="#4A148C" 
+                                  Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Expensive Queries Card -->
+                <Border Grid.Column="3" 
+                       Background="#FFEBEE" 
+                       BorderBrush="#F44336" 
+                       BorderThickness="2" 
+                       CornerRadius="10" 
+                       Padding="20">
+                    <StackPanel>
+                        <TextBlock Text="⚠️ Expensive Queries" 
+                                  FontSize="14" 
+                                  Foreground="#D32F2F" 
+                                  FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding ExpensiveQueries}" 
+                                  FontSize="36" 
+                                  FontWeight="Bold" 
+                                  Foreground="#B71C1C" 
+                                  Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <Button Content="🔄 Load Data" 
+                       Command="{Binding LoadDataCommand}" 
+                       Width="120" 
+                       Height="35" 
+                       Background="#4CAF50" 
+                       Foreground="White" 
+                       FontWeight="Bold" 
+                       BorderThickness="0" 
+                       Cursor="Hand"/>
+                <Button Content="🔃 Refresh" 
+                       Command="{Binding RefreshCommand}" 
+                       Width="120" 
+                       Height="35" 
+                       Background="#2196F3" 
+                       Foreground="White" 
+                       FontWeight="Bold" 
+                       BorderThickness="0" 
+                       Cursor="Hand" 
+                       Margin="10,0,0,0"/>
+            </StackPanel>
+
+            <!-- Loading Indicator -->
+            <Border Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                   Background="#FFF9C4" 
+                   BorderBrush="#FBC02D" 
+                   BorderThickness="1" 
+                   CornerRadius="5" 
+                   Padding="15">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="⏳" FontSize="20" Margin="0,0,10,0"/>
+                    <TextBlock Text="Loading data..." FontWeight="SemiBold"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+

@@ -12,5 +12,9 @@ public interface IConfigurationService
     Task<bool> TestConnectionAsync(ConnectionProfile profile);
     string EncryptPassword(string password);
     string DecryptPassword(string encryptedPassword);
+
+    // AI Configuration
+    Task<AiConfiguration?> GetAiConfigurationAsync();
+    Task SaveAiConfigurationAsync(AiConfiguration configuration);
 }
 

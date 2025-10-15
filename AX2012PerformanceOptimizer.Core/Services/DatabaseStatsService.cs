@@ -41,9 +41,9 @@ public class DatabaseStatsService : IDatabaseStatsService
             using var reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
-                metric.TotalSizeMB = (long)reader.GetDouble(0);
-                metric.DataSizeMB = (long)reader.GetDouble(1);
-                metric.LogSizeMB = (long)reader.GetDouble(2);
+                metric.TotalSizeMB = Convert.ToInt64(reader.GetDecimal(0));
+                metric.DataSizeMB = Convert.ToInt64(reader.GetDecimal(1));
+                metric.LogSizeMB = Convert.ToInt64(reader.GetDecimal(2));
             }
         }
         catch (Exception ex)
@@ -65,7 +65,7 @@ public class DatabaseStatsService : IDatabaseStatsService
                 SELECT TOP {topCount}
                     s.Name AS SchemaName,
                     t.Name AS TableName,
-                    p.rows AS RowCount,
+                    p.rows AS [RowCount],
                     SUM(a.total_pages) * 8 AS TotalSpaceKB,
                     SUM(a.used_pages) * 8 AS UsedSpaceKB,
                     (SUM(a.total_pages) - SUM(a.used_pages)) * 8 AS UnusedSpaceKB

@@ -1,0 +1,73 @@
+﻿<Window x:Class="AX2012PerformanceOptimizer.WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:AX2012PerformanceOptimizer.WpfApp.Views"
+        mc:Ignorable="d"
+        Title="AX 2012 Performance Optimizer" 
+        Height="800" Width="1400"
+        WindowStartupLocation="CenterScreen">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2C3E50" Padding="15">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="📊" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock Text="AX 2012 Performance Optimizer" 
+                          FontSize="20" 
+                          FontWeight="Bold" 
+                          Foreground="White"
+                          VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content with Tabs -->
+        <TabControl Grid.Row="1" Margin="10">
+            <TabItem Header="🏠 Dashboard">
+                <views:DashboardView/>
+            </TabItem>
+            
+            <TabItem Header="⚙️ Settings">
+                <views:SettingsView/>
+            </TabItem>
+            
+            <TabItem Header="📈 SQL Performance">
+                <views:SqlPerformanceView/>
+            </TabItem>
+            
+            <TabItem Header="🖥️ AOS Monitoring">
+                <views:AosMonitoringView/>
+            </TabItem>
+            
+            <TabItem Header="⏱️ Batch Jobs">
+                <views:BatchJobsView/>
+            </TabItem>
+            
+            <TabItem Header="💾 Database Health">
+                <views:DatabaseHealthView/>
+            </TabItem>
+            
+            <TabItem Header="💡 Recommendations">
+                <views:RecommendationsView/>
+            </TabItem>
+
+            <TabItem Header="📊 Historical Trending">
+                <views:HistoricalTrendingView/>
+            </TabItem>
+        </TabControl>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage, FallbackValue='Ready'}" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
