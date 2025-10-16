@@ -343,26 +343,62 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
             new SqlQueryMetric
             {
                 QueryHash = "A1B2C3D4",
-                QueryText = "SELECT * FROM INVENTTRANS WHERE ITEMID = 'ITEM001'",
+                QueryText = "SELECT IT.ITEMID, IT.QTY, IT.DATEPHYSICAL FROM INVENTTRANS IT WHERE IT.ITEMID = @P1 AND IT.DATAAREAID = 'DAT'",
                 ExecutionCount = 1250,
                 AvgElapsedTimeMs = 2450,
-                TotalElapsedTimeMs = 3062500
+                TotalElapsedTimeMs = 3062500,
+                AvgCpuTimeMs = 2100,
+                TotalCpuTimeMs = 2625000,
+                AvgPhysicalReads = 1200,
+                AvgLogicalReads = 4500
             },
             new SqlQueryMetric
             {
                 QueryHash = "E5F6G7H8",
-                QueryText = "SELECT * FROM CUSTTABLE WHERE DATAAREAID = 'DAT'",
+                QueryText = "SELECT ACCOUNTNUM, NAME, BLOCKED FROM CUSTTABLE WHERE DATAAREAID = 'DAT' ORDER BY ACCOUNTNUM",
                 ExecutionCount = 890,
                 AvgElapsedTimeMs = 1820,
-                TotalElapsedTimeMs = 1619800
+                TotalElapsedTimeMs = 1619800,
+                AvgCpuTimeMs = 1650,
+                TotalCpuTimeMs = 1468500,
+                AvgPhysicalReads = 850,
+                AvgLogicalReads = 3200
             },
             new SqlQueryMetric
             {
                 QueryHash = "I9J0K1L2",
-                QueryText = "SELECT * FROM SALESTABLE WHERE SALESSTATUS = 3",
+                QueryText = "SELECT ST.SALESID, ST.CUSTACCOUNT, ST.SALESSTATUS, ST.CREATEDDATE FROM SALESTABLE ST WHERE ST.SALESSTATUS = 3 AND ST.DATAAREAID = 'DAT'",
                 ExecutionCount = 650,
                 AvgElapsedTimeMs = 1560,
-                TotalElapsedTimeMs = 1014000
+                TotalElapsedTimeMs = 1014000,
+                AvgCpuTimeMs = 1320,
+                TotalCpuTimeMs = 858000,
+                AvgPhysicalReads = 680,
+                AvgLogicalReads = 2800
+            },
+            new SqlQueryMetric
+            {
+                QueryHash = "M3N4O5P6",
+                QueryText = "SELECT PL.ITEMID, PL.QTYORDERED, PL.PURCHPRICE FROM PURCHLINE PL INNER JOIN PURCHTABLE PT ON PL.PURCHID = PT.PURCHID WHERE PT.PURCHSTATUS = 2",
+                ExecutionCount = 420,
+                AvgElapsedTimeMs = 3200,
+                TotalElapsedTimeMs = 1344000,
+                AvgCpuTimeMs = 2850,
+                TotalCpuTimeMs = 1197000,
+                AvgPhysicalReads = 1500,
+                AvgLogicalReads = 5800
+            },
+            new SqlQueryMetric
+            {
+                QueryHash = "Q7R8S9T0",
+                QueryText = "SELECT BATCHJOBID, CAPTION, STATUS, COMPANY FROM BATCH WHERE STATUS IN (1,2,3) ORDER BY CREATEDDATETIME DESC",
+                ExecutionCount = 180,
+                AvgElapsedTimeMs = 890,
+                TotalElapsedTimeMs = 160200,
+                AvgCpuTimeMs = 750,
+                TotalCpuTimeMs = 135000,
+                AvgPhysicalReads = 320,
+                AvgLogicalReads = 1200
             }
         };
     }
@@ -373,16 +409,17 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
         {
             new PerformanceInsight
             {
-                Title = "INVENTTRANS Index Fragmentation",
-                Description = "Index IX_INVENTTRANS_ITEMID ist zu 72% fragmentiert und verursacht langsame Queries.",
+                Title = "INVENTTRANS Index Fragmentation erkannt",
+                Description = "Index IX_INVENTTRANS_ITEMID ist zu 72% fragmentiert und verursacht langsame Queries. Durchschnittliche Query-Zeit: 2,4 Sekunden (sollte < 500ms sein).",
                 Severity = "High",
                 ImpactArea = "Queries",
                 ImpactScore = 85.0,
                 RecommendedActions = new List<string>
                 {
-                    "INDEX REBUILD ausführen",
-                    "Automatisches Maintenance-Window konfigurieren",
-                    "Query-Hints mit NOLOCK testen"
+                    "INDEX REBUILD auf INVENTTRANS.IX_INVENTTRANS_ITEMID ausführen",
+                    "Automatisches Maintenance-Window für Wochenenden konfigurieren",
+                    "Query-Hints mit NOLOCK testen für Read-Operations",
+                    "Statistiken mit UPDATE STATISTICS aktualisieren"
                 },
                 PotentialImprovement = 65.0,
                 ConfidenceScore = 92.0,
@@ -390,20 +427,55 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
             },
             new PerformanceInsight
             {
-                Title = "Duplicate Queries Detected",
-                Description = "23% der CUSTTABLE Queries sind Duplikate und können konsolidiert werden.",
+                Title = "Duplicate Queries bei CUSTTABLE erkannt",
+                Description = "23% (205 von 890) der CUSTTABLE Queries sind Duplikate. Geschätzte Einsparung: 1,5 Sekunden CPU-Zeit pro Minute.",
                 Severity = "Medium",
                 ImpactArea = "Queries",
                 ImpactScore = 55.0,
                 RecommendedActions = new List<string>
                 {
-                    "Query Clustering nutzen",
-                    "Stored Procedures erstellen",
-                    "Parameterized Queries einsetzen"
+                    "Query Clustering für CUSTTABLE-Zugriffe nutzen",
+                    "Stored Procedures für häufige Abfragen erstellen",
+                    "Parameterized Queries konsequent einsetzen",
+                    "Query Result Caching implementieren"
                 },
                 PotentialImprovement = 35.0,
                 ConfidenceScore = 87.0,
                 Category = "Cost"
+            },
+            new PerformanceInsight
+            {
+                Title = "PURCHLINE JOIN Performance-Problem",
+                Description = "PURCHLINE-PURCHTABLE JOIN ohne geeigneten Index. 420 Executions mit durchschnittlich 3,2 Sekunden - 80% zu langsam!",
+                Severity = "High",
+                ImpactArea = "Queries",
+                ImpactScore = 78.0,
+                RecommendedActions = new List<string>
+                {
+                    "Composite Index auf (PURCHID, PURCHSTATUS) erstellen",
+                    "Query umschreiben: EXISTS statt JOIN prüfen",
+                    "Covering Index mit INCLUDE(ITEMID, QTYORDERED) erwägen"
+                },
+                PotentialImprovement = 70.0,
+                ConfidenceScore = 88.0,
+                Category = "Performance"
+            },
+            new PerformanceInsight
+            {
+                Title = "Batch-Job Query-Optimierung möglich",
+                Description = "BATCH-Tabelle Queries können durch Indexierung um 45% beschleunigt werden. Aktuell 180 Executions/Stunde.",
+                Severity = "Medium",
+                ImpactArea = "BatchJobs",
+                ImpactScore = 62.0,
+                RecommendedActions = new List<string>
+                {
+                    "Index auf (STATUS, CREATEDDATETIME) erstellen",
+                    "Query Filtering vor ORDER BY optimieren",
+                    "Batch Status Caching implementieren"
+                },
+                PotentialImprovement = 45.0,
+                ConfidenceScore = 85.0,
+                Category = "Performance"
             }
         };
     }

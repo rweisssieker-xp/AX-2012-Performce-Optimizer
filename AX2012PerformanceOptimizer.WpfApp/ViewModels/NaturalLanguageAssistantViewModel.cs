@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AX2012PerformanceOptimizer.Core.Services;
 using AX2012PerformanceOptimizer.Core.Models;
+using AX2012PerformanceOptimizer.Data.SqlServer;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -10,6 +11,7 @@ namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
 public partial class NaturalLanguageAssistantViewModel : ObservableObject
 {
     private readonly INaturalLanguageQueryAssistant _assistant;
+    private readonly ISqlConnectionManager _connectionManager;
     private string _sessionId = string.Empty;
 
     [ObservableProperty]
@@ -30,9 +32,18 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
     [ObservableProperty]
     private string statusMessage = "Bereit für Ihre Frage...";
 
-    public NaturalLanguageAssistantViewModel(INaturalLanguageQueryAssistant assistant)
+    [ObservableProperty]
+    private bool isDatabaseConnected;
+
+    [ObservableProperty]
+    private string connectionWarning = string.Empty;
+
+    public NaturalLanguageAssistantViewModel(
+        INaturalLanguageQueryAssistant assistant,
+        ISqlConnectionManager connectionManager)
     {
         _assistant = assistant;
+        _connectionManager = connectionManager;
         InitializeAsync();
     }
 
@@ -40,11 +51,44 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
     {
         _sessionId = await _assistant.StartNewSessionAsync();
 
+        // Check connection status
+        IsDatabaseConnected = _connectionManager.IsConnected;
+
+        // Build welcome message based on connection status
+        var welcomeMessage = new System.Text.StringBuilder();
+        welcomeMessage.AppendLine("👋 Willkommen beim AI Performance Assistant!");
+        welcomeMessage.AppendLine();
+
+        if (!IsDatabaseConnected)
+        {
+            welcomeMessage.AppendLine("⚠️ HINWEIS: Keine Datenbankverbindung gefunden!");
+            welcomeMessage.AppendLine("   → Gehen Sie zu 'Settings' und klicken Sie auf 'Connect'");
+            welcomeMessage.AppendLine("   → Demo-Modus aktiv: Ich zeige Ihnen Beispiel-Daten");
+            welcomeMessage.AppendLine();
+            ConnectionWarning = "⚠️ Demo-Modus: Bitte verbinden Sie sich mit einer Datenbank für echte Daten";
+            StatusMessage = "Demo-Modus aktiv - Beispiel-Daten werden verwendet";
+        }
+        else
+        {
+            ConnectionWarning = string.Empty;
+            StatusMessage = "Bereit für Ihre Frage...";
+        }
+
+        welcomeMessage.AppendLine("Ich kann Ihnen bei folgenden Themen helfen:");
+        welcomeMessage.AppendLine("• Performance-Probleme analysieren");
+        welcomeMessage.AppendLine("• Kostenanalysen durchführen");
+        welcomeMessage.AppendLine("• Optimierungsempfehlungen geben");
+        welcomeMessage.AppendLine("• Batch-Job Performance");
+        welcomeMessage.AppendLine("• Query-Analysen");
+        welcomeMessage.AppendLine("• Trends vorhersagen");
+        welcomeMessage.AppendLine();
+        welcomeMessage.AppendLine("Stellen Sie mir einfach eine Frage in natürlicher Sprache!");
+
         // Add welcome message
         ConversationHistory.Add(new ConversationMessage
         {
             Role = "Assistant",
-            Content = "👋 Willkommen beim AI Performance Assistant!\n\nIch kann Ihnen bei folgenden Themen helfen:\n• Performance-Probleme analysieren\n• Kostenanalysen durchführen\n• Optimierungsempfehlungen geben\n• Batch-Job Performance\n• Query-Analysen\n• Trends vorhersagen\n\nStellen Sie mir einfach eine Frage in natürlicher Sprache!",
+            Content = welcomeMessage.ToString(),
             Timestamp = DateTime.Now,
             IsUser = false
         });

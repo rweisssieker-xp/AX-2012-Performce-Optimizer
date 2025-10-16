@@ -448,6 +448,11 @@
                                    ToolTip="Automatically fix common performance issues"
                                    IsEnabled="{Binding IsAiEnabled}"/>
 
+                            <Button Content="🤖 AI Explain" Command="{Binding ShowAiExplainerCommand}"
+                                   Background="#7B1FA2" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"
+                                   ToolTip="Get AI-powered explanation of query performance issues"/>
+
                             <Button Content="📊 Predict Performance" Command="{Binding PredictPerformanceCommand}"
                                    Background="#1976D2" Foreground="White" FontWeight="Bold"
                                    Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"

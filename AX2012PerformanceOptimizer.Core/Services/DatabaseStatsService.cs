@@ -226,5 +226,110 @@ public class DatabaseStatsService : IDatabaseStatsService
         _monitoringCts?.Cancel();
         return _monitoringTask ?? Task.CompletedTask;
     }
+
+    public async Task<bool> RebuildIndexAsync(string schemaName, string tableName, string indexName)
+    {
+        try
+        {
+            using var connection = await _connectionManager.GetConnectionAsync();
+            using var command = new SqlCommand($@"
+                ALTER INDEX [{indexName}] ON [{schemaName}].[{tableName}] REBUILD
+                WITH (ONLINE = OFF, MAXDOP = 4)", connection);
+
+            command.CommandTimeout = 300; // 5 minutes timeout for large indexes
+            await command.ExecuteNonQueryAsync();
+
+            _logger.LogInformation("Successfully rebuilt index {Index} on {Schema}.{Table}", indexName, schemaName, tableName);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error rebuilding index {Index} on {Schema}.{Table}", indexName, schemaName, tableName);
+            return false;
+        }
+    }
+
+    public async Task<bool> ReorganizeIndexAsync(string schemaName, string tableName, string indexName)
+    {
+        try
+        {
+            using var connection = await _connectionManager.GetConnectionAsync();
+            using var command = new SqlCommand($@"
+                ALTER INDEX [{indexName}] ON [{schemaName}].[{tableName}] REORGANIZE", connection);
+
+            command.CommandTimeout = 300; // 5 minutes timeout
+            await command.ExecuteNonQueryAsync();
+
+            _logger.LogInformation("Successfully reorganized index {Index} on {Schema}.{Table}", indexName, schemaName, tableName);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reorganizing index {Index} on {Schema}.{Table}", indexName, schemaName, tableName);
+            return false;
+        }
+    }
+
+    public string GenerateCreateIndexScript(MissingIndex missingIndex)
+    {
+        var indexName = $"IX_{missingIndex.TableName}";
+
+        // Build column lists
+        var columns = new List<string>();
+        if (!string.IsNullOrEmpty(missingIndex.EqualityColumns))
+        {
+            columns.AddRange(missingIndex.EqualityColumns.Split(',').Select(c => c.Trim().Trim('[', ']')));
+        }
+        if (!string.IsNullOrEmpty(missingIndex.InequalityColumns))
+        {
+            columns.AddRange(missingIndex.InequalityColumns.Split(',').Select(c => c.Trim().Trim('[', ']')));
+        }
+
+        var indexColumns = string.Join(", ", columns.Select(c => $"[{c}]"));
+
+        var script = $@"-- Auto-generated index recommendation
+-- Impact Score: {missingIndex.ImpactScore:N0}
+-- Table: {missingIndex.TableName}
+CREATE NONCLUSTERED INDEX [{indexName}]
+ON [{missingIndex.DatabaseName}].[dbo].[{missingIndex.TableName}] ({indexColumns})";
+
+        // Add INCLUDE columns if specified
+        if (!string.IsNullOrEmpty(missingIndex.IncludedColumns))
+        {
+            var includedCols = missingIndex.IncludedColumns.Split(',').Select(c => $"[{c.Trim().Trim('[', ']')}]");
+            script += $@"
+INCLUDE ({string.Join(", ", includedCols)})";
+        }
+
+        script += @"
+WITH (
+    SORT_IN_TEMPDB = ON,
+    ONLINE = OFF,
+    MAXDOP = 4
+)
+GO";
+
+        return script;
+    }
+
+    public async Task<bool> CreateIndexAsync(string createIndexScript)
+    {
+        try
+        {
+            using var connection = await _connectionManager.GetConnectionAsync();
+            using var command = new SqlCommand(createIndexScript.Replace("GO", ""), connection);
+
+            command.CommandTimeout = 600; // 10 minutes timeout for index creation
+            await command.ExecuteNonQueryAsync();
+
+            _logger.LogInformation("Successfully created index");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating index");
+            return false;
+        }
+    }
 }
 

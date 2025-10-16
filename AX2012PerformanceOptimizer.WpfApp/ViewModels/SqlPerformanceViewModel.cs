@@ -14,6 +14,7 @@ public partial class SqlPerformanceViewModel : ObservableObject
     private readonly ISqlQueryMonitorService _sqlMonitor;
     private readonly IQueryAnalyzerService _queryAnalyzer;
     private readonly IAiQueryOptimizerService _aiOptimizer;
+    private readonly IAiQueryExplainerService _aiExplainer;
     private readonly IQueryAutoFixerService? _autoFixer;
     private readonly IQueryDocumentationService? _docGenerator;
     private readonly IPerformanceCostCalculatorService? _costCalculator;
@@ -93,6 +94,7 @@ public partial class SqlPerformanceViewModel : ObservableObject
         ISqlQueryMonitorService sqlMonitor,
         IQueryAnalyzerService queryAnalyzer,
         IAiQueryOptimizerService aiOptimizer,
+        IAiQueryExplainerService aiExplainer,
         IQueryAutoFixerService? autoFixer = null,
         IQueryDocumentationService? docGenerator = null,
         IPerformanceCostCalculatorService? costCalculator = null,
@@ -105,6 +107,7 @@ public partial class SqlPerformanceViewModel : ObservableObject
         _sqlMonitor = sqlMonitor;
         _queryAnalyzer = queryAnalyzer;
         _aiOptimizer = aiOptimizer;
+        _aiExplainer = aiExplainer;
         _autoFixer = autoFixer;
         _docGenerator = docGenerator;
         _costCalculator = costCalculator;
@@ -1143,6 +1146,35 @@ public partial class SqlPerformanceViewModel : ObservableObject
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ShowAiExplainer()
+    {
+        if (SelectedQuery == null)
+        {
+            MessageBox.Show(
+                "Please select a query first.",
+                "AI Query Explainer",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        try
+        {
+            var dialog = new AX2012PerformanceOptimizer.WpfApp.Dialogs.AiExplainerDialog(_aiExplainer, SelectedQuery);
+            dialog.Owner = Application.Current.MainWindow;
+            dialog.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Error opening AI Explainer:\n\n{ex.Message}",
+                "Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 }

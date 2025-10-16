@@ -1,0 +1,192 @@
+<Window x:Class="AX2012PerformanceOptimizer.WpfApp.Dialogs.DetailsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="{Binding DialogTitle}"
+        Height="600" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Background="#F5F5F5"
+        ResizeMode="CanResize"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <!-- Modern Button Style -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1976D2"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Secondary Button Style -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+            <Setter Property="Background" Value="#757575"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#616161"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <!-- Add fade-in animation -->
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                   From="0" To="1" Duration="0:0:0.3"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+
+    <Grid>
+        <!-- Card-style container with shadow effect -->
+        <Border Background="White"
+                CornerRadius="8"
+                Margin="20">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000"
+                                BlurRadius="20"
+                                ShadowDepth="2"
+                                Opacity="0.2"
+                                Direction="270"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Border Grid.Row="0"
+                        Background="#2196F3"
+                        CornerRadius="8,8,0,0"
+                        Padding="24,20">
+                    <StackPanel Orientation="Horizontal">
+                        <!-- Icon -->
+                        <TextBlock Text="{Binding DialogIcon}"
+                                 FontSize="32"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,16,0"/>
+
+                        <!-- Title -->
+                        <TextBlock Text="{Binding DialogTitle}"
+                                 FontSize="24"
+                                 FontWeight="Bold"
+                                 Foreground="White"
+                                 VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Content Area -->
+                <ScrollViewer Grid.Row="1"
+                            VerticalScrollBarVisibility="Auto"
+                            Padding="24,20">
+                    <StackPanel>
+                        <!-- Main Content Text -->
+                        <TextBlock Text="{Binding DialogContent}"
+                                 TextWrapping="Wrap"
+                                 FontSize="14"
+                                 LineHeight="24"
+                                 Foreground="#212121"/>
+
+                        <!-- Code/Script Section (if present) -->
+                        <Border x:Name="CodeSection"
+                                Visibility="{Binding HasCode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Background="#263238"
+                                CornerRadius="4"
+                                Padding="16"
+                                Margin="0,20,0,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Code Header -->
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="SQL Script / Code"
+                                             FontSize="12"
+                                             FontWeight="SemiBold"
+                                             Foreground="#90CAF9"/>
+
+                                    <Button Content="Copy"
+                                          HorizontalAlignment="Right"
+                                          Padding="12,4"
+                                          Background="#455A64"
+                                          Foreground="White"
+                                          BorderThickness="0"
+                                          Cursor="Hand"
+                                          Click="CopyCodeButton_Click">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                      CornerRadius="3"
+                                                      Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Code Content -->
+                                <TextBox Grid.Row="1"
+                                       Text="{Binding DialogCode}"
+                                       FontFamily="Consolas"
+                                       FontSize="13"
+                                       Foreground="#C3E88D"
+                                       Background="Transparent"
+                                       BorderThickness="0"
+                                       IsReadOnly="True"
+                                       TextWrapping="Wrap"
+                                       VerticalScrollBarVisibility="Auto"
+                                       MaxHeight="300"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Footer / Action Buttons -->
+                <Border Grid.Row="2"
+                        BorderBrush="#E0E0E0"
+                        BorderThickness="0,1,0,0"
+                        Padding="24,16"
+                        Background="#FAFAFA">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Close"
+                              Style="{StaticResource ModernButtonStyle}"
+                              Click="CloseButton_Click"
+                              MinWidth="100"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

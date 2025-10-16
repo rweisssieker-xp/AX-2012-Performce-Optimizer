@@ -69,6 +69,10 @@
             <TabItem Header="📊 AI Insights">
                 <views:AiInsightsDashboardView/>
             </TabItem>
+
+            <TabItem Header="🏥 AI Health Dashboard">
+                <views:AiHealthDashboardView/>
+            </TabItem>
         </TabControl>
 
         <!-- Status Bar -->

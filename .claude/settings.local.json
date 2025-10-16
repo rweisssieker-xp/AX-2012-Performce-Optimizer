@@ -1,21 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build:*)",
-      "Bash(echo $env:LOCALAPPDATA)",
-      "Bash(ls \"$env:LOCALAPPDATA\\AX2012PerformanceOptimizer\")",
-      "Bash(Select-String -Pattern \"error|warning|succeeded|failed\")",
-      "Bash(Select-Object -First 20)",
-      "Bash(dotnet add package:*)",
-      "Bash(dotnet add reference:*)",
-      "Bash(dotnet remove reference:*)",
-      "Bash(taskkill:*)",
-      "Bash(start:*)",
-      "Bash(dotnet add:*)",
-      "Bash(dotnet run:*)",
-      "Bash(Select-String \"error CS\")",
-      "Bash(Select-String -Pattern \"error|Build succeeded|Build failed\")",
-      "Bash(Select-String \"error CS|error MC|Build succeeded|Build failed\")"
+      "Bash(Select-Object Id, ProcessName, StartTime)",
+      "Bash(Select-String \"error|warning|succeeded|failed\")",
+      "Bash(Stop-Process -Force -ErrorAction SilentlyContinue)",
+      "Bash(Start-Sleep -Seconds 2)"
     ],
     "deny": [],
     "ask": []

@@ -12,6 +12,8 @@
                     <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
                     <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
                     <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+                    <converters:ProfileIsActiveConverter x:Key="ProfileIsActiveConverter"/>
+                    <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter"/>
                 </ResourceDictionary>
                 
                 <!-- Modern WPF Styles -->

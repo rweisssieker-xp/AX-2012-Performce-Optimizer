@@ -47,7 +47,13 @@
                                     <Style TargetType="Border">
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Id}" Value="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ActiveConnectionProfile.Id}">
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource ProfileIsActiveConverter}">
+                                                        <Binding Path="Id"/>
+                                                        <Binding Path="DataContext.ActiveConnectionProfile" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
                                                 <Setter Property="Background" Value="#E8F5E9"/>
                                                 <Setter Property="BorderBrush" Value="#4CAF50"/>
                                                 <Setter Property="BorderThickness" Value="2"/>
@@ -63,7 +69,13 @@
                                                 <Style TargetType="Ellipse">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Id}" Value="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ActiveConnectionProfile.Id}">
+                                                        <DataTrigger Value="True">
+                                                            <DataTrigger.Binding>
+                                                                <MultiBinding Converter="{StaticResource ProfileIsActiveConverter}">
+                                                                    <Binding Path="Id"/>
+                                                                    <Binding Path="DataContext.ActiveConnectionProfile" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                                                </MultiBinding>
+                                                            </DataTrigger.Binding>
                                                             <Setter Property="Visibility" Value="Visible"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>

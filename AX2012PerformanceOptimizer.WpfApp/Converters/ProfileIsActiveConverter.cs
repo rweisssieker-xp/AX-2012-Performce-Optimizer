@@ -9,13 +9,21 @@ public class ProfileIsActiveConverter : IMultiValueConverter
 {
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
-        if (values.Length < 2)
+        if (values == null || values.Length < 2)
             return false;
 
-        if (values[0] is not Guid profileId || values[1] is not ConnectionProfile activeProfile)
+        // Check for unset values
+        if (values[0] == null || values[1] == null)
             return false;
 
-        return profileId == activeProfile.Id;
+        // values[0] = current profile's Id (string)
+        // values[1] = ActiveConnectionProfile (ConnectionProfile object)
+        if (values[0] is string profileId && values[1] is ConnectionProfile activeProfile)
+        {
+            return profileId == activeProfile.Id;
+        }
+
+        return false;
     }
 
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

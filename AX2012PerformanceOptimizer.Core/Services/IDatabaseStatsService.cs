@@ -11,5 +11,11 @@ public interface IDatabaseStatsService
     Task StartMonitoringAsync(CancellationToken cancellationToken = default);
     Task StopMonitoringAsync();
     event EventHandler<DatabaseMetric>? NewMetricCollected;
+
+    // Index Actions
+    Task<bool> RebuildIndexAsync(string schemaName, string tableName, string indexName);
+    Task<bool> ReorganizeIndexAsync(string schemaName, string tableName, string indexName);
+    string GenerateCreateIndexScript(MissingIndex missingIndex);
+    Task<bool> CreateIndexAsync(string createIndexScript);
 }
 

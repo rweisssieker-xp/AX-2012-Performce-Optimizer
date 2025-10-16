@@ -75,6 +75,162 @@ public partial class DatabaseHealthViewModel : ObservableObject
     {
         await LoadDataAsync();
     }
+
+    [RelayCommand]
+    private async Task RebuildIndex(IndexFragmentation? index)
+    {
+        if (index == null) return;
+
+        var result = System.Windows.MessageBox.Show(
+            $"Rebuild index '{index.IndexName}' on table '{index.TableName}'?\n\n" +
+            $"Fragmentation: {index.FragmentationPercent:F2}%\n" +
+            $"Pages: {index.PageCount:N0}\n\n" +
+            $"This operation may take several minutes and will lock the table.",
+            "Rebuild Index",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result != System.Windows.MessageBoxResult.Yes) return;
+
+        IsLoading = true;
+        try
+        {
+            var success = await _databaseStats.RebuildIndexAsync(index.SchemaName, index.TableName, index.IndexName);
+
+            if (success)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Successfully rebuilt index '{index.IndexName}'!",
+                    "Success",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+
+                await RefreshAsync();
+            }
+            else
+            {
+                System.Windows.MessageBox.Show(
+                    $"Failed to rebuild index '{index.IndexName}'. Check logs for details.",
+                    "Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ReorganizeIndex(IndexFragmentation? index)
+    {
+        if (index == null) return;
+
+        var result = System.Windows.MessageBox.Show(
+            $"Reorganize index '{index.IndexName}' on table '{index.TableName}'?\n\n" +
+            $"Fragmentation: {index.FragmentationPercent:F2}%\n" +
+            $"Pages: {index.PageCount:N0}\n\n" +
+            $"This is a faster, online operation with less locking.",
+            "Reorganize Index",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result != System.Windows.MessageBoxResult.Yes) return;
+
+        IsLoading = true;
+        try
+        {
+            var success = await _databaseStats.ReorganizeIndexAsync(index.SchemaName, index.TableName, index.IndexName);
+
+            if (success)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Successfully reorganized index '{index.IndexName}'!",
+                    "Success",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+
+                await RefreshAsync();
+            }
+            else
+            {
+                System.Windows.MessageBox.Show(
+                    $"Failed to reorganize index '{index.IndexName}'. Check logs for details.",
+                    "Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private void CopyIndexScript(MissingIndex? missingIndex)
+    {
+        if (missingIndex == null) return;
+
+        var script = _databaseStats.GenerateCreateIndexScript(missingIndex);
+        System.Windows.Clipboard.SetText(script);
+
+        System.Windows.MessageBox.Show(
+            "CREATE INDEX script copied to clipboard!",
+            "Script Copied",
+            System.Windows.MessageBoxButton.OK,
+            System.Windows.MessageBoxImage.Information);
+    }
+
+    [RelayCommand]
+    private async Task CreateIndex(MissingIndex? missingIndex)
+    {
+        if (missingIndex == null) return;
+
+        var script = _databaseStats.GenerateCreateIndexScript(missingIndex);
+
+        var result = System.Windows.MessageBox.Show(
+            $"Create index on table '{missingIndex.TableName}'?\n\n" +
+            $"Impact Score: {missingIndex.ImpactScore:N0}\n" +
+            $"Seeks: {missingIndex.UserSeeks:N0}, Scans: {missingIndex.UserScans:N0}\n\n" +
+            $"The following script will be executed:\n\n{script}\n\n" +
+            $"This may take several minutes.",
+            "Create Index",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result != System.Windows.MessageBoxResult.Yes) return;
+
+        IsLoading = true;
+        try
+        {
+            var success = await _databaseStats.CreateIndexAsync(script);
+
+            if (success)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Successfully created index!",
+                    "Success",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+
+                await RefreshAsync();
+            }
+            else
+            {
+                System.Windows.MessageBox.Show(
+                    $"Failed to create index. Check logs for details.",
+                    "Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
 }
 
 

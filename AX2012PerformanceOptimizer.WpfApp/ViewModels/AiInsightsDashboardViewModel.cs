@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AX2012PerformanceOptimizer.Core.Services;
 using AX2012PerformanceOptimizer.Core.Models;
+using AX2012PerformanceOptimizer.WpfApp.Services;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Text;
@@ -11,6 +12,7 @@ namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
 public partial class AiInsightsDashboardViewModel : ObservableObject
 {
     private readonly IAiPerformanceInsightsService _insightsService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private bool isLoading;
@@ -63,9 +65,10 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
     [ObservableProperty]
     private double performanceChange;
 
-    public AiInsightsDashboardViewModel(IAiPerformanceInsightsService insightsService)
+    public AiInsightsDashboardViewModel(IAiPerformanceInsightsService insightsService, IDialogService dialogService)
     {
         _insightsService = insightsService;
+        _dialogService = dialogService;
         LoadDashboardAsync();
     }
 
@@ -119,8 +122,10 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler beim Laden des Dashboards: {ex.Message}",
-                "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            await _dialogService.ShowErrorAsync(
+                "Fehler beim Laden",
+                $"Fehler beim Laden des Dashboards:\n\n{ex.Message}\n\nBitte überprüfen Sie die Datenbankverbindung in den Settings.",
+                ex);
             StatusMessage = "Fehler beim Laden";
         }
         finally
@@ -139,42 +144,23 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
         {
             var summary = await _insightsService.GenerateWeeklySummaryAsync();
 
-            var message = new StringBuilder();
-            message.AppendLine("📅 Weekly Performance Summary\n");
-            message.AppendLine($"Zeitraum: {summary.WeekStartDate:dd.MM.yyyy} - {summary.WeekEndDate:dd.MM.yyyy}\n");
-            message.AppendLine($"{summary.Summary}\n");
-            message.AppendLine("🔍 Top Findings:");
-            foreach (var finding in summary.TopFindings)
+            var sections = new Dictionary<string, string>
             {
-                message.AppendLine($"  • {finding}");
-            }
-            message.AppendLine();
-            message.AppendLine("✅ Verbesserungen:");
-            foreach (var improvement in summary.Improvements.Take(3))
-            {
-                message.AppendLine($"  • {improvement}");
-            }
-            message.AppendLine();
-            message.AppendLine("⚠️ Probleme:");
-            foreach (var issue in summary.Issues.Take(3))
-            {
-                message.AppendLine($"  • {issue}");
-            }
-            message.AppendLine();
-            message.AppendLine("💡 Empfehlungen:");
-            foreach (var rec in summary.Recommendations.Take(3))
-            {
-                message.AppendLine($"  • {rec}");
-            }
+                { "📅 Zeitraum", $"{summary.WeekStartDate:dd.MM.yyyy} - {summary.WeekEndDate:dd.MM.yyyy}" },
+                { "📊 Summary", summary.Summary },
+                { "🔍 Top Findings", string.Join("\n", summary.TopFindings.Select(f => $"• {f}")) },
+                { "✅ Verbesserungen", string.Join("\n", summary.Improvements.Take(3).Select(i => $"• {i}")) },
+                { "⚠️ Probleme", string.Join("\n", summary.Issues.Take(3).Select(i => $"• {i}")) },
+                { "💡 Empfehlungen", string.Join("\n", summary.Recommendations.Take(3).Select(r => $"• {r}")) }
+            };
 
-            MessageBox.Show(message.ToString(), "Weekly Performance Summary",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            await _dialogService.ShowSummaryAsync("Weekly Performance Summary", sections);
 
             StatusMessage = "Weekly Summary angezeigt";
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            await _dialogService.ShowErrorAsync("Fehler", $"Fehler beim Generieren der Weekly Summary:\n\n{ex.Message}", ex);
             StatusMessage = "Fehler";
         }
         finally
@@ -196,42 +182,24 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
 
             var summary = await _insightsService.GenerateExecutiveSummaryAsync(startDate, endDate);
 
-            var message = new StringBuilder();
-            message.AppendLine("📊 Executive Performance Summary\n");
-            message.AppendLine($"{summary.ExecutiveOverview}\n");
-            message.AppendLine("📈 Key Numbers:");
-            foreach (var kvp in summary.KeyNumbers)
+            var sections = new Dictionary<string, string>
             {
-                message.AppendLine($"  • {kvp.Key}: {kvp.Value}");
-            }
-            message.AppendLine();
-            message.AppendLine("✅ Positive Highlights:");
-            foreach (var highlight in summary.PositiveHighlights)
-            {
-                message.AppendLine($"  • {highlight}");
-            }
-            message.AppendLine();
-            message.AppendLine("⚠️ Concern Areas:");
-            foreach (var concern in summary.ConcernAreas)
-            {
-                message.AppendLine($"  • {concern}");
-            }
-            message.AppendLine();
-            message.AppendLine($"💰 Business Impact:\n{summary.BusinessImpact}\n");
-            message.AppendLine("📋 Executive Recommendations:");
-            foreach (var rec in summary.ExecutiveRecommendations)
-            {
-                message.AppendLine($"  • {rec}");
-            }
+                { "📅 Zeitraum", $"{startDate:dd.MM.yyyy} - {endDate:dd.MM.yyyy}" },
+                { "📊 Executive Overview", summary.ExecutiveOverview },
+                { "📈 Key Numbers", string.Join("\n", summary.KeyNumbers.Select(kvp => $"• {kvp.Key}: {kvp.Value}")) },
+                { "✅ Positive Highlights", string.Join("\n", summary.PositiveHighlights.Select(h => $"• {h}")) },
+                { "⚠️ Concern Areas", string.Join("\n", summary.ConcernAreas.Select(c => $"• {c}")) },
+                { "💰 Business Impact", summary.BusinessImpact },
+                { "📋 Executive Recommendations", string.Join("\n", summary.ExecutiveRecommendations.Select(r => $"• {r}")) }
+            };
 
-            MessageBox.Show(message.ToString(), "Executive Summary",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            await _dialogService.ShowSummaryAsync("Executive Performance Summary", sections);
 
             StatusMessage = "Executive Summary angezeigt";
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Fehler: {ex.Message}", "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            await _dialogService.ShowErrorAsync("Fehler", $"Fehler beim Generieren der Executive Summary:\n\n{ex.Message}", ex);
             StatusMessage = "Fehler";
         }
         finally
@@ -241,56 +209,51 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ViewInsightDetails(PerformanceInsight? insight)
+    private async Task ViewInsightDetails(PerformanceInsight? insight)
     {
         if (insight == null) return;
 
-        var message = new StringBuilder();
-        message.AppendLine($"💡 {insight.Title}\n");
-        message.AppendLine($"Severity: {insight.Severity}");
-        message.AppendLine($"Category: {insight.Category}");
-        message.AppendLine($"Impact Score: {insight.ImpactScore:F0}/100");
-        message.AppendLine($"Confidence: {insight.ConfidenceScore:F0}%");
-        message.AppendLine($"Potential Improvement: +{insight.PotentialImprovement:F0}%\n");
-        message.AppendLine($"Description:\n{insight.Description}\n");
-        message.AppendLine("Recommended Actions:");
-        foreach (var action in insight.RecommendedActions)
-        {
-            message.AppendLine($"  • {action}");
-        }
+        var content = $"Severity: {insight.Severity}\n" +
+                     $"Category: {insight.Category}\n" +
+                     $"Impact Score: {insight.ImpactScore:F0}/100\n" +
+                     $"Confidence: {insight.ConfidenceScore:F0}%\n" +
+                     $"Potential Improvement: +{insight.PotentialImprovement:F0}%\n\n" +
+                     $"Description:\n{insight.Description}\n\n" +
+                     $"Recommended Actions:\n" +
+                     string.Join("\n", insight.RecommendedActions.Select(a => $"• {a}"));
 
-        MessageBox.Show(message.ToString(), "Insight Details",
-            MessageBoxButton.OK, MessageBoxImage.Information);
+        await _dialogService.ShowDetailsAsync(
+            $"💡 {insight.Title}",
+            content,
+            null,
+            "💡");
     }
 
     [RelayCommand]
-    private void ViewOpportunityDetails(OptimizationOpportunity? opportunity)
+    private async Task ViewOpportunityDetails(OptimizationOpportunity? opportunity)
     {
         if (opportunity == null) return;
 
-        var message = new StringBuilder();
-        message.AppendLine($"💡 {opportunity.Title}\n");
-        message.AppendLine($"Type: {opportunity.OpportunityType}");
-        message.AppendLine($"Priority: {opportunity.PriorityLevel} ({opportunity.PriorityScore}/100)");
-        message.AppendLine($"Effort: {opportunity.EffortLevel} ({opportunity.EstimatedImplementationTime:F1}h)\n");
-        message.AppendLine($"Description:\n{opportunity.Description}\n");
-        message.AppendLine($"💰 Impact:");
-        message.AppendLine($"  • Cost Savings: €{opportunity.EstimatedCostSavings:F2}/month");
-        message.AppendLine($"  • Time Savings: {opportunity.EstimatedTimeSavings:F0}ms");
-        message.AppendLine($"  • Affected Queries: {opportunity.AffectedQueries}\n");
-        message.AppendLine($"📊 ROI Analysis:");
-        message.AppendLine($"  • ROI: {opportunity.ROI:F1}x");
-        message.AppendLine($"  • Payback Period: {opportunity.PaybackPeriod:F1} days\n");
-        message.AppendLine("🔧 Implementation Steps:");
-        foreach (var step in opportunity.ImplementationSteps)
-        {
-            message.AppendLine($"  {step}");
-        }
-        message.AppendLine();
-        message.AppendLine($"Automation Available: {opportunity.AutomationAvailable}");
+        var content = $"Type: {opportunity.OpportunityType}\n" +
+                     $"Priority: {opportunity.PriorityLevel} ({opportunity.PriorityScore}/100)\n" +
+                     $"Effort: {opportunity.EffortLevel} ({opportunity.EstimatedImplementationTime:F1}h)\n\n" +
+                     $"Description:\n{opportunity.Description}\n\n" +
+                     $"💰 Impact:\n" +
+                     $"• Cost Savings: €{opportunity.EstimatedCostSavings:F2}/month\n" +
+                     $"• Time Savings: {opportunity.EstimatedTimeSavings:F0}ms\n" +
+                     $"• Affected Queries: {opportunity.AffectedQueries}\n\n" +
+                     $"📊 ROI Analysis:\n" +
+                     $"• ROI: {opportunity.ROI:F1}x\n" +
+                     $"• Payback Period: {opportunity.PaybackPeriod:F1} days\n\n" +
+                     $"🔧 Implementation Steps:\n" +
+                     string.Join("\n", opportunity.ImplementationSteps) + "\n\n" +
+                     $"Automation Available: {opportunity.AutomationAvailable}";
 
-        MessageBox.Show(message.ToString(), "Optimization Opportunity",
-            MessageBoxButton.OK, MessageBoxImage.Information);
+        await _dialogService.ShowDetailsAsync(
+            $"💡 {opportunity.Title}",
+            content,
+            null,
+            "💡");
     }
 
     [RelayCommand]
@@ -298,7 +261,7 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
     {
         if (Dashboard == null)
         {
-            MessageBox.Show("Kein Dashboard geladen.", "Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await _dialogService.ShowWarningAsync("Export", "Kein Dashboard geladen.\n\nBitte laden Sie zuerst ein Dashboard.");
             return;
         }
 
@@ -350,15 +313,19 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
 
             await System.IO.File.WriteAllTextAsync(filePath, content.ToString());
 
-            MessageBox.Show($"Dashboard exportiert!\n\nDatei: {filePath}",
-                "Export erfolgreich", MessageBoxButton.OK, MessageBoxImage.Information);
+            await _dialogService.ShowSuccessAsync(
+                "Export erfolgreich",
+                "Dashboard erfolgreich exportiert!",
+                $"Datei: {filePath}");
 
             StatusMessage = "Dashboard exportiert";
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Export fehlgeschlagen: {ex.Message}",
-                "Fehler", MessageBoxButton.OK, MessageBoxImage.Error);
+            await _dialogService.ShowErrorAsync(
+                "Export fehlgeschlagen",
+                $"Fehler beim Exportieren des Dashboards:\n\n{ex.Message}",
+                ex);
         }
     }
 }

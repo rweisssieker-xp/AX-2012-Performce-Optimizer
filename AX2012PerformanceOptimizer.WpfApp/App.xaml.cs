@@ -68,6 +68,30 @@ public partial class App : Application
                     return aiService;
                 });
 
+                // AI Query Explainer Service
+                services.AddSingleton<IAiQueryExplainerService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AiQueryExplainerService>>();
+                    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                    var httpClient = httpClientFactory.CreateClient("AI");
+                    var explainerService = new AiQueryExplainerService(logger, httpClient);
+
+                    // Load configuration and configure the service
+                    var configService = sp.GetRequiredService<IConfigurationService>();
+                    var aiConfig = configService.GetAiConfigurationAsync().Result;
+                    if (aiConfig != null && aiConfig.IsEnabled && !string.IsNullOrEmpty(aiConfig.EncryptedApiKey))
+                    {
+                        var apiKey = configService.DecryptPassword(aiConfig.EncryptedApiKey);
+                        explainerService.Configure(
+                            apiKey,
+                            aiConfig.Endpoint,
+                            aiConfig.Model,
+                            aiConfig.Provider == Data.Models.AiProvider.AzureOpenAI);
+                    }
+
+                    return explainerService;
+                });
+
                 // NEW: Advanced AI Features
                 services.AddSingleton<IQueryAutoFixerService>(sp =>
                 {
@@ -158,6 +182,19 @@ public partial class App : Application
                     return new IntelligentQueryRewriter(logger, aiService);
                 });
 
+                // NEW: AI Health Dashboard - System Health Score Service
+                services.AddSingleton<ISystemHealthScoreService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<SystemHealthScoreService>>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    var batchJobMonitor = sp.GetRequiredService<IBatchJobMonitorService>();
+                    return new SystemHealthScoreService(logger, queryMonitor, databaseStats, batchJobMonitor);
+                });
+
+                // NEW: Dialog Service for modern popups
+                services.AddSingleton<Services.IDialogService, Services.DialogService>();
+
                 // ViewModels
                 services.AddTransient<MainViewModel>();
                 services.AddTransient<DashboardViewModel>();
@@ -172,6 +209,7 @@ public partial class App : Application
                 // PHASE 1 AI FEATURES: ViewModels
                 services.AddTransient<NaturalLanguageAssistantViewModel>();
                 services.AddTransient<AiInsightsDashboardViewModel>();
+                services.AddTransient<AiHealthDashboardViewModel>();
 
                 // Windows (not registered as singleton - created via XAML)
             })
