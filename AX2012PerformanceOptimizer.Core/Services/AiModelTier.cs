@@ -31,14 +31,18 @@ public static class AiModelSelector
         {
             AiModelTier.UltraCheap, new List<string>
             {
-                "gpt-4o-mini",      // Primary: Cheapest, still very capable
+                "gpt-5-nano",       // Primary: Ultra-cheap GPT-5 (16k context)
+                "gpt-5-mini",       // Fallback: Lightweight GPT-5 (64k context)
+                "gpt-4o-mini",      // Fallback: Previous gen cheap
                 "gpt-3.5-turbo"     // Fallback: Legacy but reliable
             }
         },
         {
             AiModelTier.Balanced, new List<string>
             {
-                "gpt-4o",           // Primary: Best balance
+                "gpt-5",            // Primary: GPT-5 main model (200k context)
+                "gpt-5-mini",       // Fallback: Lightweight but fast
+                "gpt-4o",           // Fallback: GPT-4o best balance
                 "gpt-4o-mini",      // Fallback: Still good
                 "gpt-4-turbo"       // Fallback: Older but solid
             }
@@ -46,10 +50,12 @@ public static class AiModelSelector
         {
             AiModelTier.Premium, new List<string>
             {
-                "o1-mini",          // Primary: Reasoning model
-                "o1-preview",       // Fallback: Most capable
-                "gpt-4o",           // Fallback: Fast alternative
-                "gpt-4"             // Fallback: Reliable
+                "gpt-5-thinking",   // Primary: BEST for SQL DMV Analysis (256k context)
+                "gpt-5-thinking-mini", // Fallback: Good reasoning, lower cost (128k)
+                "o1",               // Fallback: Full reasoning model
+                "o1-mini",          // Fallback: Reasoning model
+                "gpt-5",            // Fallback: Fast GPT-5
+                "o1-preview"        // Fallback: Most capable
             }
         }
     };
@@ -59,9 +65,19 @@ public static class AiModelSelector
     /// </summary>
     private static readonly Dictionary<string, decimal> ModelCosts = new()
     {
+        // GPT-5 Series (Latest 2025)
+        { "gpt-5-nano", 0.10m },              // Ultra-cheap, 16k context
+        { "gpt-5-mini", 0.20m },              // Lightweight, 64k context
+        { "gpt-5", 3.00m },                   // Main model, 200k context (balanced)
+        { "gpt-5-thinking-nano", 3.50m },     // Light reasoning, 64k context
+        { "gpt-5-thinking-mini", 6.00m },     // Good reasoning, 128k context
+        { "gpt-5-thinking", 12.00m },         // BEST for SQL DMV, 256k context
+
+        // GPT-4 Series
         { "gpt-4o-mini", 0.15m },
         { "gpt-3.5-turbo", 0.50m },
         { "gpt-4o", 2.50m },
+        { "o1", 5.00m },                      // Full reasoning model
         { "o1-mini", 3.00m },
         { "gpt-4-turbo", 10.00m },
         { "o1-preview", 15.00m },
@@ -126,22 +142,33 @@ public static class AiModelSelector
     {
         return taskType.ToLower() switch
         {
-            "complexity-score" => "gpt-4o-mini",         // Ultra cheap, simple task
-            "validation" => "gpt-4o-mini",               // Ultra cheap
-            "documentation" => "gpt-4o-mini",            // Ultra cheap
-            "simple-analysis" => "gpt-4o-mini",          // Ultra cheap
+            // Ultra cheap tasks
+            "complexity-score" => "gpt-5-nano",          // Ultra cheap, simple task
+            "validation" => "gpt-5-nano",                // Ultra cheap
+            "documentation" => "gpt-5-mini",             // Ultra cheap
+            "simple-analysis" => "gpt-5-mini",           // Ultra cheap
 
-            "query-analysis" => "gpt-4o",                // Balanced
-            "index-recommendation" => "gpt-4o",          // Balanced
-            "cost-estimation" => "gpt-4o-mini",          // Ultra cheap
-            "performance-prediction" => "gpt-4o",        // Balanced
+            // Balanced tasks
+            "query-analysis" => "gpt-5",                 // Balanced - fast analysis
+            "index-recommendation" => "gpt-5",           // Balanced
+            "cost-estimation" => "gpt-5-mini",           // Balanced but cheap
+            "performance-prediction" => "gpt-5",         // Balanced
 
-            "batch-analysis" => "o1-mini",               // Premium
-            "complex-optimization" => "o1-mini",         // Premium
-            "cross-query-optimization" => "o1-mini",     // Premium
-            "business-logic-analysis" => "o1-mini",      // Premium
+            // Premium reasoning tasks (SQL-DMV specific!)
+            "dmv-analysis" => "gpt-5-thinking",          // 🔥 BEST for SQL DMV Analysis
+            "wait-stats-analysis" => "gpt-5-thinking",   // 🔥 BEST for Wait Stats patterns
+            "lock-analysis" => "gpt-5-thinking",         // 🔥 BEST for Lock detection
+            "io-bottleneck-analysis" => "gpt-5-thinking", // 🔥 BEST for I/O bottlenecks
+            "query-plan-interpretation" => "gpt-5-thinking", // 🔥 BEST for Query Plans
+            "performance-consulting" => "gpt-5-thinking-mini", // Good for consulting
 
-            _ => "gpt-4o"                                // Default: balanced
+            // Complex reasoning tasks
+            "batch-analysis" => "gpt-5-thinking-mini",   // Premium reasoning
+            "complex-optimization" => "gpt-5-thinking-mini", // Premium reasoning
+            "cross-query-optimization" => "gpt-5-thinking", // Premium reasoning
+            "business-logic-analysis" => "gpt-5-thinking-mini", // Premium reasoning
+
+            _ => "gpt-5"                                 // Default: balanced GPT-5
         };
     }
 

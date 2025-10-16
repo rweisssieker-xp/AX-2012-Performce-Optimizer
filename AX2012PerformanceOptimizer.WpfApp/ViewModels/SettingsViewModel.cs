@@ -31,6 +31,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> availableDatabases = new();
 
+    [ObservableProperty]
+    private ConnectionProfile? activeConnectionProfile;
+
     // AI Configuration
     [ObservableProperty]
     private bool isAiEnabled;
@@ -53,15 +56,23 @@ public partial class SettingsViewModel : ObservableObject
     public ObservableCollection<string> AiProviders { get; } = new() { "OpenAI", "AzureOpenAI" };
     public ObservableCollection<string> AiModels { get; } = new()
     {
-        // ⭐ RECOMMENDED: Cost-Optimized Models
-        "gpt-4o-mini",          // 💰 CHEAPEST - 80% cheaper than GPT-4 (0.15/1M tokens)
-        "gpt-3.5-turbo",        // 💰 Ultra cheap - Legacy model (0.50/1M tokens)
+        // 🚀 GPT-5 Series (Latest 2025 - RECOMMENDED for AX 2012 Performance Analysis)
+        "gpt-5-thinking",       // 🧠🧠🧠 BEST for SQL DMV Analysis, Wait Stats, Query Plans (12.00/1M, 256k ctx)
+        "gpt-5-thinking-mini",  // 🧠🧠 Great for SQL Analysis - Cost/Performance Balance (6.00/1M, 128k ctx)
+        "gpt-5-thinking-nano",  // 🧠 Light Reasoning - Budget-friendly (3.50/1M, 64k ctx)
+        "gpt-5",                // ⚡ Main Model - Fast & Smart (3.00/1M, 200k ctx)
+        "gpt-5-mini",           // 💰 Lightweight - Quick responses (0.20/1M, 64k ctx)
+        "gpt-5-nano",           // 💰💰 Ultra-cheap - Simple tasks (0.10/1M, 16k ctx)
 
-        // 🌟 Latest High-Performance Models (GPT-4.5 / o1 Series)
+        // 🌟 GPT-4.5 / o1 Series (Previous Gen)
         "gpt-4o",               // ⚡ Best balance - Fast & Smart (2.50/1M tokens)
-        "o1",                   // 🧠 Full Reasoning Model - Production Ready (NEW!)
+        "o1",                   // 🧠 Full Reasoning Model - Production Ready (5.00/1M)
         "o1-mini",              // 🧠 Reasoning - Complex analysis (3.00/1M tokens)
         "o1-preview",           // 🧠 Advanced reasoning - Most capable (15.00/1M tokens)
+
+        // ⭐ Cost-Optimized Models
+        "gpt-4o-mini",          // 💰 CHEAPEST - 80% cheaper than GPT-4 (0.15/1M tokens)
+        "gpt-3.5-turbo",        // 💰 Ultra cheap - Legacy model (0.50/1M tokens)
 
         // 🔥 Power Models
         "gpt-4-turbo",          // Fast GPT-4 (10.00/1M tokens)
@@ -173,11 +184,17 @@ public partial class SettingsViewModel : ObservableObject
                 }
 
                 _sqlConnectionManager.SetConnectionString(builder.ConnectionString);
-                
+
+                // Mark this profile as the active connection
+                ActiveConnectionProfile = SelectedProfile;
+
                 SelectedProfile.LastUsedDate = DateTime.UtcNow;
                 await _configService.SaveProfileAsync(SelectedProfile);
 
                 StatusMessage = "Connected successfully!";
+
+                // Notify all profiles to refresh their appearance
+                OnPropertyChanged(nameof(Profiles));
             }
             catch (Exception ex)
             {

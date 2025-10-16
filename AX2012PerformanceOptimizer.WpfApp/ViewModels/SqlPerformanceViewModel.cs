@@ -16,6 +16,12 @@ public partial class SqlPerformanceViewModel : ObservableObject
     private readonly IAiQueryOptimizerService _aiOptimizer;
     private readonly IQueryAutoFixerService? _autoFixer;
     private readonly IQueryDocumentationService? _docGenerator;
+    private readonly IPerformanceCostCalculatorService? _costCalculator;
+    private readonly IQueryPerformanceForecastingService? _forecasting;
+    private readonly ISelfHealingQueryService? _selfHealing;
+    private readonly IQueryCorrelationEngine? _correlationEngine;
+    private readonly IQueryClusteringService? _clusteringService;
+    private readonly IIntelligentQueryRewriter? _queryRewriter;
     private List<SqlQueryMetric> _allQueries = new();
 
     [ObservableProperty]
@@ -88,13 +94,25 @@ public partial class SqlPerformanceViewModel : ObservableObject
         IQueryAnalyzerService queryAnalyzer,
         IAiQueryOptimizerService aiOptimizer,
         IQueryAutoFixerService? autoFixer = null,
-        IQueryDocumentationService? docGenerator = null)
+        IQueryDocumentationService? docGenerator = null,
+        IPerformanceCostCalculatorService? costCalculator = null,
+        IQueryPerformanceForecastingService? forecasting = null,
+        ISelfHealingQueryService? selfHealing = null,
+        IQueryCorrelationEngine? correlationEngine = null,
+        IQueryClusteringService? clusteringService = null,
+        IIntelligentQueryRewriter? queryRewriter = null)
     {
         _sqlMonitor = sqlMonitor;
         _queryAnalyzer = queryAnalyzer;
         _aiOptimizer = aiOptimizer;
         _autoFixer = autoFixer;
         _docGenerator = docGenerator;
+        _costCalculator = costCalculator;
+        _forecasting = forecasting;
+        _selfHealing = selfHealing;
+        _correlationEngine = correlationEngine;
+        _clusteringService = clusteringService;
+        _queryRewriter = queryRewriter;
         IsAiEnabled = _aiOptimizer.IsAvailable;
     }
 
@@ -709,6 +727,418 @@ public partial class SqlPerformanceViewModel : ObservableObject
         catch (Exception ex)
         {
             MessageBox.Show($"Error: {ex.Message}", "Batch Analysis Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task CalculateQueryCostAsync()
+    {
+        if (SelectedQuery == null || _costCalculator == null)
+        {
+            MessageBox.Show("Cost Calculator is not available or no query selected.", "Cost Analysis", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            var parameters = new CostParameters
+            {
+                AverageHourlySalary = 50.0,
+                ActiveUsers = 100,
+                QueriesPerUserPerDay = 500,
+                MonthlyHardwareCost = 5000.0,
+                Currency = "€"
+            };
+
+            var costAnalysis = await _costCalculator.CalculateQueryCostAsync(SelectedQuery, parameters);
+
+            var message = new StringBuilder();
+            message.AppendLine("💰 Query Cost Analysis\n");
+            message.AppendLine($"Daily Cost: {parameters.Currency}{costAnalysis.DailyTotalCost:N2}");
+            message.AppendLine($"Monthly Cost: {parameters.Currency}{costAnalysis.MonthlyTotalCost:N2}");
+            message.AppendLine($"Yearly Cost: {parameters.Currency}{costAnalysis.YearlyTotalCost:N2}\n");
+            message.AppendLine($"Breakdown:");
+            message.AppendLine($"  User Productivity: {parameters.Currency}{costAnalysis.YearlyUserProductivityCost:N2}/year");
+            message.AppendLine($"  Infrastructure: {parameters.Currency}{costAnalysis.YearlyInfrastructureCost:N2}/year\n");
+            message.AppendLine($"Total Wait Time: {costAnalysis.TotalWaitTimeHoursPerYear:F0} hours/year");
+            message.AppendLine($"Affected Users: {costAnalysis.AffectedUsers}");
+
+            MessageBox.Show(message.ToString(), "Cost Analysis", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Cost Analysis Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ForecastPerformanceAsync()
+    {
+        if (SelectedQuery == null || _forecasting == null)
+        {
+            MessageBox.Show("Forecasting is not available or no query selected.", "Performance Forecast", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            // Simulate historical data (in production, would come from HistoricalDataService)
+            var history = new List<HistoricalQuerySnapshot>();
+            for (int i = 0; i < 30; i++)
+            {
+                history.Add(new HistoricalQuerySnapshot
+                {
+                    Timestamp = DateTime.Now.AddDays(-i),
+                    QueryHash = SelectedQuery.QueryHash,
+                    AvgElapsedTimeMs = SelectedQuery.AvgElapsedTimeMs * (1 + (i * 0.01)),
+                    ExecutionCount = SelectedQuery.ExecutionCount,
+                    AvgCpuTimeMs = SelectedQuery.AvgCpuTimeMs,
+                    AvgLogicalReads = SelectedQuery.AvgLogicalReads
+                });
+            }
+
+            var forecast = await _forecasting.ForecastPerformanceAsync(SelectedQuery, history, 30);
+
+            MessageBox.Show(forecast.Summary, "Performance Forecast", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Forecast Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task HealQueryAsync()
+    {
+        if (SelectedQuery == null || _selfHealing == null)
+        {
+            MessageBox.Show("Self-Healing is not available or no query selected.", "Self-Healing", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            var options = new HealingOptions
+            {
+                AutoApply = false,
+                RequireApproval = true,
+                AutoRollback = true,
+                TestBeforeApply = true
+            };
+
+            var result = await _selfHealing.HealQueryAsync(SelectedQuery, options);
+
+            if (result.Success)
+            {
+                var message = new StringBuilder();
+                message.AppendLine(result.Summary);
+                message.AppendLine("\nApply healing?");
+
+                var dialogResult = MessageBox.Show(message.ToString(), "Self-Healing Result", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (dialogResult == MessageBoxResult.Yes)
+                {
+                    Clipboard.SetText(result.HealedQuery);
+                    MessageBox.Show("Healed query copied to clipboard!", "Applied", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            else
+            {
+                MessageBox.Show(result.Message, "Self-Healing", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Self-Healing Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task AnalyzeQueryCorrelationsAsync()
+    {
+        if (_correlationEngine == null || !_allQueries.Any())
+        {
+            MessageBox.Show("Correlation Engine is not available or no queries loaded.", "Query Correlations", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            // Simulate historical data
+            var history = new List<HistoricalQuerySnapshot>();
+
+            var result = await _correlationEngine.AnalyzeQueryCorrelationsAsync(_allQueries, history);
+
+            var message = new StringBuilder();
+            message.AppendLine(result.Summary);
+
+            MessageBox.Show(message.ToString(), "Query Correlation Analysis", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Correlation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task ClusterQueriesAsync()
+    {
+        if (_clusteringService == null || !_allQueries.Any())
+        {
+            MessageBox.Show("Clustering Service is not available or no queries loaded.", "Query Clustering", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            var options = new ClusteringOptions
+            {
+                MinClusterSize = 3,
+                SimilarityThreshold = 0.75,
+                ClusteringMethod = "Similarity"
+            };
+
+            var result = await _clusteringService.ClusterQueriesAsync(_allQueries, options);
+
+            var message = new StringBuilder();
+            message.AppendLine(result.Summary);
+            message.AppendLine($"\nFound {result.TotalClusters} clusters:\n");
+
+            foreach (var cluster in result.Clusters.Take(5))
+            {
+                message.AppendLine($"📊 {cluster.ClusterName}");
+                message.AppendLine($"   Queries: {cluster.QueryHashes.Count}");
+                message.AppendLine($"   Total Time: {cluster.TotalExecutionTime:F0}ms");
+                message.AppendLine($"   Executions: {cluster.TotalExecutions:N0}\n");
+            }
+
+            MessageBox.Show(message.ToString(), "Query Clustering", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Clustering Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task FindDuplicatesAsync()
+    {
+        if (_clusteringService == null || !_allQueries.Any())
+        {
+            MessageBox.Show("Clustering Service is not available or no queries loaded.", "Find Duplicates", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            var duplicates = await _clusteringService.FindDuplicateQueriesAsync(_allQueries);
+
+            var message = new StringBuilder();
+            message.AppendLine($"🔍 Duplicate Query Analysis\n");
+            message.AppendLine($"Found {duplicates.Count} duplicate groups:\n");
+
+            foreach (var group in duplicates.Take(10))
+            {
+                message.AppendLine($"Group: {group.QueryHashes.Count} similar queries");
+                message.AppendLine($"Similarity: {group.SimilarityScore:P0}");
+                message.AppendLine($"💡 {group.Recommendation}\n");
+            }
+
+            if (duplicates.Count == 0)
+            {
+                message.AppendLine("✅ No duplicate queries found!");
+            }
+
+            MessageBox.Show(message.ToString(), "Duplicate Queries", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Find Duplicates Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task RewriteQueryAsync()
+    {
+        if (SelectedQuery == null || _queryRewriter == null)
+        {
+            MessageBox.Show("Query Rewriter is not available or no query selected.", "Query Rewriter", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            IsLoading = true;
+
+            // Build context from selected query
+            var context = new QueryRewriteContext
+            {
+                DatabaseName = "AX2012",
+                IsAX2012Query = true,
+                CurrentExecutionTimeMs = (long)SelectedQuery.AvgElapsedTimeMs,
+                ExecutionCount = (int)SelectedQuery.ExecutionCount,
+                LogicalReads = (long)SelectedQuery.AvgLogicalReads,
+                Goals = new List<OptimizationGoal>
+                {
+                    OptimizationGoal.ReduceExecutionTime,
+                    OptimizationGoal.ReduceIO
+                },
+                Priority = OptimizationPriority.Balanced,
+                AllowTableHints = true,
+                AllowIndexHints = true,
+                AllowStructuralChanges = true,
+                AXVersion = "AX 2012 R3"
+            };
+
+            // Get rewrite options
+            var options = await _queryRewriter.SuggestRewriteOptionsAsync(SelectedQuery.QueryText, context);
+
+            if (!options.Any())
+            {
+                MessageBox.Show("No rewrite options found. Query is already well-optimized!", "Query Rewriter", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Build options message
+            var message = new StringBuilder();
+            message.AppendLine($"✍️ Intelligent Query Rewriter\n");
+            message.AppendLine($"Found {options.Count} rewrite option(s):\n");
+
+            int optionNumber = 1;
+            foreach (var option in options.OrderByDescending(o => o.EstimatedImprovementPercentage))
+            {
+                var recommendedIcon = option.Recommended ? "⭐" : "";
+                message.AppendLine($"{optionNumber}. {recommendedIcon} {option.OptionName}");
+                message.AppendLine($"   Approach: {option.Approach}");
+                message.AppendLine($"   Improvement: +{option.EstimatedImprovementPercentage:F0}%");
+                message.AppendLine($"   Complexity: {option.ComplexityScore}/10");
+                message.AppendLine($"   Risk: {option.RiskScore}/10");
+                message.AppendLine($"   {option.Description}\n");
+                optionNumber++;
+            }
+
+            message.AppendLine("View detailed rewrite for best option?");
+
+            var dialogResult = MessageBox.Show(message.ToString(), "Query Rewrite Options", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (dialogResult != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            // Get best option
+            var bestOption = options.OrderByDescending(o => o.EstimatedImprovementPercentage).First();
+
+            // Build detailed result using the full RewriteQueryAsync
+            var result = await _queryRewriter.RewriteQueryAsync(SelectedQuery.QueryText, context);
+
+            // Show detailed result
+            var detailMessage = new StringBuilder();
+            detailMessage.AppendLine($"✨ Query Rewrite Result\n");
+            detailMessage.AppendLine($"Estimated Improvement: +{result.EstimatedImprovementPercentage:F0}%");
+            detailMessage.AppendLine($"Confidence: {result.ConfidenceScore:F0}%");
+            detailMessage.AppendLine($"Semantically Equivalent: {(result.IsSemanticallyEquivalent ? "✅ Yes" : "⚠️ Needs Verification")}\n");
+
+            detailMessage.AppendLine("Changes Made:");
+            foreach (var change in result.ChangesSummary)
+            {
+                detailMessage.AppendLine($"  • {change}");
+            }
+            detailMessage.AppendLine();
+
+            detailMessage.AppendLine("Techniques Applied:");
+            foreach (var technique in result.TechniquesApplied.OrderByDescending(t => t.ImpactPercentage))
+            {
+                detailMessage.AppendLine($"  • {technique.TechniqueName} (+{technique.ImpactPercentage:F0}%)");
+            }
+            detailMessage.AppendLine();
+
+            if (result.AX2012BestPractices.Any())
+            {
+                detailMessage.AppendLine("AX 2012 Best Practices:");
+                foreach (var practice in result.AX2012BestPractices)
+                {
+                    detailMessage.AppendLine($"  ✓ {practice}");
+                }
+                detailMessage.AppendLine();
+            }
+
+            detailMessage.AppendLine($"Reason: {result.ImprovementReason}\n");
+            detailMessage.AppendLine("Copy rewritten query to clipboard?");
+
+            var copyResult = MessageBox.Show(detailMessage.ToString(), "Query Rewrite Details", MessageBoxButton.YesNo, MessageBoxImage.Information);
+
+            if (copyResult == MessageBoxResult.Yes)
+            {
+                // Build comparison for clipboard
+                var clipboardContent = new StringBuilder();
+                clipboardContent.AppendLine("-- ==========================================");
+                clipboardContent.AppendLine("-- Intelligent Query Rewriter Result");
+                clipboardContent.AppendLine($"-- Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                clipboardContent.AppendLine($"-- Estimated Improvement: +{result.EstimatedImprovementPercentage:F0}%");
+                clipboardContent.AppendLine("-- ==========================================\n");
+
+                clipboardContent.AppendLine("-- ORIGINAL QUERY:");
+                clipboardContent.AppendLine(result.OriginalQuery);
+                clipboardContent.AppendLine("\n-- ==========================================\n");
+
+                clipboardContent.AppendLine("-- CHANGES:");
+                foreach (var change in result.ChangesSummary)
+                {
+                    clipboardContent.AppendLine($"-- • {change}");
+                }
+                clipboardContent.AppendLine("\n-- ==========================================\n");
+
+                clipboardContent.AppendLine("-- REWRITTEN QUERY:");
+                clipboardContent.AppendLine(result.RewrittenQuery);
+
+                Clipboard.SetText(clipboardContent.ToString());
+                MessageBox.Show("Rewritten query copied to clipboard!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}", "Query Rewriter Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {

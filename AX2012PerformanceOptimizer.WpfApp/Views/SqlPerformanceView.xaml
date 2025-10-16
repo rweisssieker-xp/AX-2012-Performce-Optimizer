@@ -454,7 +454,49 @@
                                    ToolTip="Predict performance impact of optimizations"/>
                         </StackPanel>
 
-                        <!-- Row 2: Documentation -->
+                        <!-- Row 2: Advanced Features -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="✍️ Rewrite Query" Command="{Binding RewriteQueryCommand}"
+                                   Background="#9C27B0" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand"
+                                   ToolTip="Intelligent Query Rewriter - AI-powered query optimization with multiple rewrite options"
+                                   IsEnabled="{Binding IsAiEnabled}"/>
+
+                            <Button Content="💰 Calculate Cost" Command="{Binding CalculateQueryCostCommand}"
+                                   Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"
+                                   ToolTip="Calculate monetary cost of query (€/$/£)"/>
+
+                            <Button Content="🔮 Forecast Performance" Command="{Binding ForecastPerformanceCommand}"
+                                   Background="#2196F3" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"
+                                   ToolTip="Forecast future performance trends (30-day prediction)"/>
+
+                            <Button Content="🩹 Heal Query" Command="{Binding HealQueryCommand}"
+                                   Background="#FF9800" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"
+                                   ToolTip="Automatically heal query performance issues"/>
+                        </StackPanel>
+
+                        <!-- Row 3: Query Intelligence -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Button Content="🔗 Analyze Correlations" Command="{Binding AnalyzeQueryCorrelationsCommand}"
+                                   Background="#673AB7" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand"
+                                   ToolTip="Discover hidden relationships between queries"/>
+
+                            <Button Content="📊 Cluster Queries" Command="{Binding ClusterQueriesCommand}"
+                                   Background="#00BCD4" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"
+                                   ToolTip="Group similar queries for bulk optimization"/>
+
+                            <Button Content="🔍 Find Duplicates" Command="{Binding FindDuplicatesCommand}"
+                                   Background="#009688" Foreground="White" FontWeight="Bold"
+                                   Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"
+                                   ToolTip="Detect duplicate or near-duplicate queries"/>
+                        </StackPanel>
+
+                        <!-- Row 4: Documentation -->
                         <StackPanel Orientation="Horizontal">
                             <Button Content="📚 Generate Docs" Command="{Binding GenerateDocumentationCommand}"
                                    Background="#388E3C" Foreground="White" FontWeight="Bold"

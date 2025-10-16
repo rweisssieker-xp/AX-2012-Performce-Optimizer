@@ -3,6 +3,7 @@ namespace AX2012PerformanceOptimizer.Core.Models;
 public class BatchJobMetric
 {
     public string JobId { get; set; } = string.Empty;
+    public string JobName { get; set; } = string.Empty;
     public string JobDescription { get; set; } = string.Empty;
     public string ClassName { get; set; } = string.Empty;
     public BatchJobStatus Status { get; set; }
@@ -14,6 +15,14 @@ public class BatchJobMetric
     public int ExecutionCount { get; set; }
     public double AvgDurationMinutes { get; set; }
     public DateTime CollectedAt { get; set; } = DateTime.UtcNow;
+
+    // Additional properties for Smart Batching Advisor
+    public double AvgDuration => AvgDurationMinutes * 60.0; // Convert minutes to seconds
+    public long RecordsProcessed { get; set; } = 0;
+    public int TotalExecutions => ExecutionCount;
+    public int Priority { get; set; } = 5; // Default priority
+    public DateTime ScheduledTime { get; set; } = DateTime.Now;
+    public bool IsParallel { get; set; } = false;
 }
 
 public enum BatchJobStatus

@@ -13,7 +13,9 @@
       "Bash(start:*)",
       "Bash(dotnet add:*)",
       "Bash(dotnet run:*)",
-      "Bash(Select-String \"error CS\")"
+      "Bash(Select-String \"error CS\")",
+      "Bash(Select-String -Pattern \"error|Build succeeded|Build failed\")",
+      "Bash(Select-String \"error CS|error MC|Build succeeded|Build failed\")"
     ],
     "deny": [],
     "ask": []

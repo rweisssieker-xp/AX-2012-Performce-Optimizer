@@ -83,6 +83,81 @@ public partial class App : Application
                     return new QueryDocumentationService(logger, aiOptimizer);
                 });
 
+                // NEW: Performance Cost Calculator
+                services.AddSingleton<IPerformanceCostCalculatorService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<PerformanceCostCalculatorService>>();
+                    return new PerformanceCostCalculatorService(logger);
+                });
+
+                // NEW: Query Performance Forecasting
+                services.AddSingleton<IQueryPerformanceForecastingService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<QueryPerformanceForecastingService>>();
+                    return new QueryPerformanceForecastingService(logger);
+                });
+
+                // NEW: Self-Healing Queries
+                services.AddSingleton<ISelfHealingQueryService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<SelfHealingQueryService>>();
+                    var autoFixer = sp.GetRequiredService<IQueryAutoFixerService>();
+                    return new SelfHealingQueryService(logger, autoFixer);
+                });
+
+                // NEW: Query Correlation Engine
+                services.AddSingleton<IQueryCorrelationEngine>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<QueryCorrelationEngine>>();
+                    return new QueryCorrelationEngine(logger);
+                });
+
+                // NEW: Smart Batching Advisor
+                services.AddSingleton<ISmartBatchingAdvisor>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<SmartBatchingAdvisor>>();
+                    return new SmartBatchingAdvisor(logger);
+                });
+
+                // NEW: Query Clustering Service
+                services.AddSingleton<IQueryClusteringService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<QueryClusteringService>>();
+                    return new QueryClusteringService(logger);
+                });
+
+                // PHASE 1 AI FEATURES: Natural Language Query Assistant (with real data services)
+                services.AddSingleton<INaturalLanguageQueryAssistant>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<NaturalLanguageQueryAssistant>>();
+                    var aiService = sp.GetRequiredService<IAiQueryOptimizerService>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var historicalData = sp.GetRequiredService<IHistoricalDataService>();
+                    var costCalculator = sp.GetRequiredService<IPerformanceCostCalculatorService>();
+                    var queryAnalyzer = sp.GetRequiredService<IQueryAnalyzerService>();
+                    return new NaturalLanguageQueryAssistant(logger, aiService, queryMonitor, historicalData, costCalculator, queryAnalyzer);
+                });
+
+                // PHASE 1 AI FEATURES: AI Performance Insights Dashboard (with real data services)
+                services.AddSingleton<IAiPerformanceInsightsService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AiPerformanceInsightsService>>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var historicalData = sp.GetRequiredService<IHistoricalDataService>();
+                    var costCalculator = sp.GetRequiredService<IPerformanceCostCalculatorService>();
+                    var queryAnalyzer = sp.GetRequiredService<IQueryAnalyzerService>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    return new AiPerformanceInsightsService(logger, queryMonitor, historicalData, costCalculator, queryAnalyzer, databaseStats);
+                });
+
+                // PHASE 1 AI FEATURES: Intelligent Query Rewriter
+                services.AddSingleton<IIntelligentQueryRewriter>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<IntelligentQueryRewriter>>();
+                    var aiService = sp.GetRequiredService<IAiQueryOptimizerService>();
+                    return new IntelligentQueryRewriter(logger, aiService);
+                });
+
                 // ViewModels
                 services.AddTransient<MainViewModel>();
                 services.AddTransient<DashboardViewModel>();
@@ -93,6 +168,10 @@ public partial class App : Application
                 services.AddTransient<RecommendationsViewModel>();
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<HistoricalTrendingViewModel>();
+
+                // PHASE 1 AI FEATURES: ViewModels
+                services.AddTransient<NaturalLanguageAssistantViewModel>();
+                services.AddTransient<AiInsightsDashboardViewModel>();
 
                 // Windows (not registered as singleton - created via XAML)
             })

@@ -36,20 +36,51 @@
                        Cursor="Hand" 
                        Margin="0,0,0,10"/>
 
-                <ListBox ItemsSource="{Binding Profiles}" 
-                        SelectedItem="{Binding SelectedProfile, Mode=TwoWay}" 
+                <ListBox ItemsSource="{Binding Profiles}"
+                        SelectedItem="{Binding SelectedProfile, Mode=TwoWay}"
                         Height="400"
                         BorderThickness="0">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Margin="5">
-                                <TextBlock Text="{Binding Name}" 
-                                          FontWeight="Bold" 
-                                          FontSize="14"/>
-                                <TextBlock Text="{Binding SqlServerName}" 
-                                          FontSize="11" 
-                                          Foreground="#757575"/>
-                            </StackPanel>
+                            <Border Margin="2" Padding="8" CornerRadius="5">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Id}" Value="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ActiveConnectionProfile.Id}">
+                                                <Setter Property="Background" Value="#E8F5E9"/>
+                                                <Setter Property="BorderBrush" Value="#4CAF50"/>
+                                                <Setter Property="BorderThickness" Value="2"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <!-- Active Connection Indicator -->
+                                        <Ellipse Width="10" Height="10" Fill="#4CAF50" Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Id}" Value="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.ActiveConnectionProfile.Id}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
+
+                                        <TextBlock Text="{Binding Name}"
+                                                  FontWeight="Bold"
+                                                  FontSize="14"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding SqlServerName}"
+                                              FontSize="11"
+                                              Foreground="#757575"
+                                              Margin="18,0,0,0"/>
+                                </StackPanel>
+                            </Border>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

@@ -61,10 +61,55 @@
             <TabItem Header="📊 Historical Trending">
                 <views:HistoricalTrendingView/>
             </TabItem>
+
+            <TabItem Header="🗣️ NL Assistant">
+                <views:NaturalLanguageAssistantView/>
+            </TabItem>
+
+            <TabItem Header="📊 AI Insights">
+                <views:AiInsightsDashboardView/>
+            </TabItem>
         </TabControl>
 
         <!-- Status Bar -->
-        <StatusBar Grid.Row="2">
+        <StatusBar Grid.Row="2" Background="#F5F5F5">
+            <!-- Connection Status -->
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <!-- Connection Indicator -->
+                    <Ellipse Width="12" Height="12" Margin="5,0,8,0" VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#F44336"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="Fill" Value="#4CAF50"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+
+                    <!-- Connection Text -->
+                    <TextBlock VerticalAlignment="Center" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{Binding ConnectionStatusText}"/>
+                                <Setter Property="Foreground" Value="#757575"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="Foreground" Value="#2E7D32"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </StatusBarItem>
+
+            <Separator Margin="10,0"/>
+
+            <!-- General Status Message -->
             <StatusBarItem>
                 <TextBlock Text="{Binding StatusMessage, FallbackValue='Ready'}" />
             </StatusBarItem>

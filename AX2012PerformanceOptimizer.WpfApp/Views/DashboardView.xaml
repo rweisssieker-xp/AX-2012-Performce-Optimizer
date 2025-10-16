@@ -120,26 +120,56 @@
 
             <!-- Action Buttons -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                <Button Content="🔄 Load Data" 
-                       Command="{Binding LoadDataCommand}" 
-                       Width="120" 
-                       Height="35" 
-                       Background="#4CAF50" 
-                       Foreground="White" 
-                       FontWeight="Bold" 
-                       BorderThickness="0" 
+                <Button Content="🔄 Load Data"
+                       Command="{Binding LoadDataCommand}"
+                       Width="120"
+                       Height="35"
+                       Background="#4CAF50"
+                       Foreground="White"
+                       FontWeight="Bold"
+                       BorderThickness="0"
                        Cursor="Hand"/>
-                <Button Content="🔃 Refresh" 
-                       Command="{Binding RefreshCommand}" 
-                       Width="120" 
-                       Height="35" 
-                       Background="#2196F3" 
-                       Foreground="White" 
-                       FontWeight="Bold" 
-                       BorderThickness="0" 
-                       Cursor="Hand" 
+                <Button Content="🔃 Refresh"
+                       Command="{Binding RefreshCommand}"
+                       Width="120"
+                       Height="35"
+                       Background="#2196F3"
+                       Foreground="White"
+                       FontWeight="Bold"
+                       BorderThickness="0"
+                       Cursor="Hand"
                        Margin="10,0,0,0"/>
             </StackPanel>
+
+            <!-- AI Performance Insights Section (Phase 1 Features) -->
+            <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="2"
+                   CornerRadius="10" Padding="15" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="🤖 AI Performance Insights (Phase 1)" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="📊 Generate Dashboard"
+                               Command="{Binding GenerateInsightsDashboardCommand}"
+                               Background="#2196F3" Foreground="White" FontWeight="Bold"
+                               Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand"
+                               ToolTip="Generate AI-powered performance insights dashboard with automatic analysis"/>
+
+                        <Button Content="📅 Weekly Summary"
+                               Command="{Binding ShowWeeklySummaryCommand}"
+                               Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                               Height="35" Padding="15,0" BorderThickness="0"
+                               Cursor="Hand" Margin="10,0,0,0"
+                               ToolTip="Get AI-generated weekly performance summary with findings and recommendations"/>
+
+                        <Button Content="💡 Find Opportunities"
+                               Command="{Binding ShowOptimizationOpportunitiesCommand}"
+                               Background="#FF9800" Foreground="White" FontWeight="Bold"
+                               Height="35" Padding="15,0" BorderThickness="0"
+                               Cursor="Hand" Margin="10,0,0,0"
+                               ToolTip="Discover optimization opportunities with ROI analysis and effort estimates"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <!-- Loading Indicator -->
             <Border Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" 

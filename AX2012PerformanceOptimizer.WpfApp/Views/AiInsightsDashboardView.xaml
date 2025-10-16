@@ -1,0 +1,325 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.AiInsightsDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1200">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="📊 AI Performance Insights Dashboard" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Automatische Performance-Analyse mit AI-gestützten Empfehlungen"
+                      Foreground="#757575" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Action Bar -->
+        <Border Grid.Row="1" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1"
+               CornerRadius="10" Padding="15" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="🔄 Dashboard neu laden" Command="{Binding LoadDashboardCommand}"
+                       Background="#2196F3" Foreground="White" FontWeight="Bold"
+                       Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand"/>
+
+                <Button Content="📅 Weekly Summary" Command="{Binding ShowWeeklySummaryCommand}"
+                       Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                       Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+
+                <Button Content="👔 Executive Summary" Command="{Binding ShowExecutiveSummaryCommand}"
+                       Background="#9C27B0" Foreground="White" FontWeight="Bold"
+                       Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+
+                <Button Content="💾 Exportieren" Command="{Binding ExportDashboardCommand}"
+                       Background="#FF9800" Foreground="White" FontWeight="Bold"
+                       Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center"
+                          Foreground="#757575" Margin="20,0,0,0" FontSize="12"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Metrics Cards -->
+        <Grid Grid.Row="2" Margin="0,0,0,20" Visibility="{Binding HasDashboard, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Performance Score Card -->
+            <Border Grid.Column="0" Background="#E8F5E9" BorderBrush="#4CAF50" BorderThickness="2"
+                   CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="📈 Performance Score" FontSize="12" Foreground="#757575"/>
+                    <TextBlock Text="{Binding PerformanceGrade}" FontSize="36" FontWeight="Bold" Foreground="#2E7D32" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding OverallPerformanceScore, StringFormat='{}{0:F0}/100'}" FontSize="14" Foreground="#757575"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Trend Card -->
+            <Border Grid.Column="1" Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="2"
+                   CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="📊 Trend" FontSize="12" Foreground="#757575"/>
+                    <TextBlock Text="{Binding TrendDirection}" FontSize="20" FontWeight="Bold" Foreground="#1565C0" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding PerformanceChange, StringFormat='{}{0:+0.0;-0.0}%'}" FontSize="18" Foreground="#1565C0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Daily Cost Card -->
+            <Border Grid.Column="2" Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="2"
+                   CornerRadius="10" Padding="15" Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="💰 Daily Cost" FontSize="12" Foreground="#757575"/>
+                    <TextBlock Text="{Binding EstimatedDailyCost, StringFormat='€{0:F2}'}" FontSize="24" FontWeight="Bold" Foreground="#E65100" Margin="0,5,0,0"/>
+                    <TextBlock Text="Per day" FontSize="10" Foreground="#757575"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Monthly Cost Card -->
+            <Border Grid.Column="3" Background="#F3E5F5" BorderBrush="#9C27B0" BorderThickness="2"
+                   CornerRadius="10" Padding="15">
+                <StackPanel>
+                    <TextBlock Text="💰 Monthly Cost" FontSize="12" Foreground="#757575"/>
+                    <TextBlock Text="{Binding EstimatedMonthlyCost, StringFormat='€{0:F2}'}" FontSize="24" FontWeight="Bold" Foreground="#6A1B9A" Margin="0,5,0,0"/>
+                    <TextBlock Text="Per month" FontSize="10" Foreground="#757575"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Content Tabs -->
+        <TabControl Grid.Row="3" Visibility="{Binding HasDashboard, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <!-- Top Insights Tab -->
+            <TabItem Header="💡 Top Insights">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
+                    <ItemsControl ItemsSource="{Binding TopInsights}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderThickness="2" CornerRadius="8" Padding="15" Margin="0,0,0,15" Cursor="Hand">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#FFEBEE"/>
+                                            <Setter Property="BorderBrush" Value="#F44336"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Severity}" Value="High">
+                                                    <Setter Property="Background" Value="#FFF3E0"/>
+                                                    <Setter Property="BorderBrush" Value="#FF9800"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Severity}" Value="Medium">
+                                                    <Setter Property="Background" Value="#E3F2FD"/>
+                                                    <Setter Property="BorderBrush" Value="#2196F3"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.ViewInsightDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                     CommandParameter="{Binding}"/>
+                                    </Border.InputBindings>
+
+                                    <StackPanel>
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Background="#D32F2F" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#D32F2F"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Severity}" Value="High">
+                                                                    <Setter Property="Background" Value="#F57C00"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Severity}" Value="Medium">
+                                                                    <Setter Property="Background" Value="#1976D2"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding Severity}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <Border HorizontalAlignment="Right" Background="#4CAF50" CornerRadius="3" Padding="6,2">
+                                                <TextBlock Foreground="White" FontSize="10">
+                                                    <Run Text="Impact: "/>
+                                                    <Run Text="{Binding ImpactScore, StringFormat='{}{0:F0}/100'}" FontWeight="Bold"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </Grid>
+
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="12" Margin="0,10,0,10"/>
+
+                                        <Border Background="#FFFDE7" BorderBrush="#FBC02D" BorderThickness="1" CornerRadius="5" Padding="8">
+                                            <StackPanel>
+                                                <TextBlock Text="💡 Empfohlene Aktionen:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
+                                                <ItemsControl ItemsSource="{Binding RecommendedActions}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding}" FontSize="10" Margin="0,2" TextWrapping="Wrap">
+                                                                <Run Text="• "/>
+                                                                <Run Text="{Binding}"/>
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Optimization Opportunities Tab -->
+            <TabItem Header="💡 Opportunities">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
+                    <ItemsControl ItemsSource="{Binding Opportunities}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#E8F5E9" BorderBrush="#4CAF50" BorderThickness="2"
+                                       CornerRadius="8" Padding="15" Margin="0,0,0,15" Cursor="Hand">
+                                    <Border.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.ViewOpportunityDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                     CommandParameter="{Binding}"/>
+                                    </Border.InputBindings>
+
+                                    <StackPanel>
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Background="#2E7D32" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                                                    <TextBlock Text="{Binding PriorityLevel}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <Border HorizontalAlignment="Right" Background="#FF9800" CornerRadius="3" Padding="6,2">
+                                                <TextBlock Foreground="White" FontSize="10">
+                                                    <Run Text="ROI: "/>
+                                                    <Run Text="{Binding ROI, StringFormat='{}{0:F1}x'}" FontWeight="Bold"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </Grid>
+
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="12" Margin="0,10,0,10"/>
+
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="💰 Savings" FontSize="10" Foreground="#757575"/>
+                                                <TextBlock Text="{Binding EstimatedCostSavings, StringFormat='€{0:F2}/mo'}" FontSize="12" FontWeight="Bold" Foreground="#2E7D32"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="⏱️ Effort" FontSize="10" Foreground="#757575"/>
+                                                <TextBlock Text="{Binding EffortLevel}" FontSize="12" FontWeight="Bold" Foreground="#1976D2"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="📊 Payback" FontSize="10" Foreground="#757575"/>
+                                                <TextBlock Text="{Binding PaybackPeriod, StringFormat='{}{0:F0} days'}" FontSize="12" FontWeight="Bold" Foreground="#F57C00"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Risk Alerts Tab -->
+            <TabItem Header="⚠️ Risk Alerts">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
+                    <ItemsControl ItemsSource="{Binding Risks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#FFEBEE" BorderBrush="#F44336" BorderThickness="2"
+                                       CornerRadius="8" Padding="15" Margin="0,0,0,15">
+                                    <StackPanel>
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Background="#D32F2F" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                                                    <TextBlock Text="{Binding Severity}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <Border HorizontalAlignment="Right" Background="#FF5722" CornerRadius="3" Padding="6,2">
+                                                <TextBlock Foreground="White" FontSize="10">
+                                                    <Run Text="Risk: "/>
+                                                    <Run Text="{Binding RiskScore, StringFormat='{}{0:F0}/100'}" FontWeight="Bold"/>
+                                                </TextBlock>
+                                            </Border>
+                                        </Grid>
+
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="12" Margin="0,10,0,10"/>
+
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="📊 Probability" FontSize="10" Foreground="#757575"/>
+                                                <TextBlock Text="{Binding Probability, StringFormat='{}{0:F0}%'}" FontSize="12" FontWeight="Bold" Foreground="#D32F2F"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="⏰ Time to Impact" FontSize="10" Foreground="#757575"/>
+                                                <TextBlock Text="{Binding TimeToImpact}" FontSize="12" FontWeight="Bold" Foreground="#D32F2F"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Border Background="#FFF9C4" BorderBrush="#FBC02D" BorderThickness="1" CornerRadius="5" Padding="8">
+                                            <StackPanel>
+                                                <TextBlock Text="🔧 Mitigation Actions:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
+                                                <ItemsControl ItemsSource="{Binding MitigationActions}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding}" FontSize="10" Margin="0,2" TextWrapping="Wrap">
+                                                                <Run Text="• "/>
+                                                                <Run Text="{Binding}"/>
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Loading Indicator -->
+        <Border Grid.Row="3" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+               Background="#FFF9C4" BorderBrush="#FBC02D" BorderThickness="1" CornerRadius="5" Padding="20"
+               HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="⏳" FontSize="24" Margin="0,0,15,0"/>
+                <TextBlock Text="Generiere AI Performance Insights..." FontWeight="SemiBold" FontSize="16" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

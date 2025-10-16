@@ -11,10 +11,50 @@
             <TextBlock Text="Batch Jobs Monitor" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
 
             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                <Button Content="🔄 Refresh" Command="{Binding RefreshCommand}" 
-                       Background="#2196F3" Foreground="White" FontWeight="Bold" 
+                <Button Content="🔄 Refresh" Command="{Binding RefreshCommand}"
+                       Background="#2196F3" Foreground="White" FontWeight="Bold"
                        Width="120" Height="35" BorderThickness="0" Cursor="Hand"/>
             </StackPanel>
+
+            <!-- Smart Batching Advisor Tools -->
+            <Border Background="#E8F5E9" BorderBrush="#4CAF50" BorderThickness="2"
+                   CornerRadius="10" Padding="15" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="⚡ Smart Batching Advisor" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <!-- Row 1: Analysis Tools -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="📊 Analyze Batch Sizing"
+                               Command="{Binding AnalyzeBatchSizingCommand}"
+                               Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                               Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand"
+                               ToolTip="Analyze optimal batch size for maximum performance"/>
+
+                        <Button Content="📅 Optimize Scheduling"
+                               Command="{Binding OptimizeSchedulingCommand}"
+                               Background="#2196F3" Foreground="White" FontWeight="Bold"
+                               Height="35" Padding="15,0" BorderThickness="0"
+                               Cursor="Hand" Margin="10,0,0,0"
+                               ToolTip="Find optimal execution time to minimize system load"/>
+                    </StackPanel>
+
+                    <!-- Row 2: Detection & Optimization -->
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="⚠️ Detect Anti-Patterns"
+                               Command="{Binding DetectAntiPatternsCommand}"
+                               Background="#FF9800" Foreground="White" FontWeight="Bold"
+                               Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand"
+                               ToolTip="Identify batch job anti-patterns (Row-by-Row, Peak Hour, etc.)"/>
+
+                        <Button Content="🚀 Optimize Parallelization"
+                               Command="{Binding OptimizeParallelizationCommand}"
+                               Background="#9C27B0" Foreground="White" FontWeight="Bold"
+                               Height="35" Padding="15,0" BorderThickness="0"
+                               Cursor="Hand" Margin="10,0,0,0"
+                               ToolTip="Recommend optimal parallel processing configuration"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
             <!-- Running Jobs -->
             <Border Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="2" 

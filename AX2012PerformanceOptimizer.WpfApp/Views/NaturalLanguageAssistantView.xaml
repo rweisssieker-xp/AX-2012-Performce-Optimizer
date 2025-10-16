@@ -1,0 +1,241 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.NaturalLanguageAssistantView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1200">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="🗣️ Natural Language Query Assistant" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Stellen Sie Fragen in natürlicher Sprache über Ihre AX 2012 Performance"
+                      Foreground="#757575" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Action Bar -->
+        <Border Grid.Row="1" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1"
+               CornerRadius="10" Padding="15" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="🗑️ Konversation löschen" Command="{Binding ClearConversationCommand}"
+                       Background="#F44336" Foreground="White" FontWeight="Bold"
+                       Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand"/>
+
+                <Button Content="💾 Exportieren" Command="{Binding ExportConversationCommand}"
+                       Background="#2196F3" Foreground="White" FontWeight="Bold"
+                       Height="35" Padding="15,0" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center"
+                          Foreground="#757575" Margin="20,0,0,0" FontSize="12"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Conversation Area -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Chat Messages -->
+            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="2"
+                   CornerRadius="10" Padding="0" Margin="0,0,10,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="15">
+                    <ItemsControl ItemsSource="{Binding ConversationHistory}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,15" CornerRadius="10" Padding="15">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#E3F2FD"/>
+                                            <Setter Property="HorizontalAlignment" Value="Left"/>
+                                            <Setter Property="MaxWidth" Value="600"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsUser}" Value="True">
+                                                    <Setter Property="Background" Value="#E8F5E9"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                                    <Setter Property="Background" Value="#FFEBEE"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
+                                    <StackPanel>
+                                        <!-- Message Header -->
+                                        <Grid Margin="0,0,0,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="Bold" FontSize="12">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="🤖 Assistant"/>
+                                                            <Setter Property="Foreground" Value="#1976D2"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsUser}" Value="True">
+                                                                    <Setter Property="Text" Value="👤 Sie"/>
+                                                                    <Setter Property="Foreground" Value="#388E3C"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                                                    <Setter Property="Foreground" Value="#D32F2F"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}"
+                                                          Foreground="#757575" FontSize="10" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <Button Content="📋" Command="{Binding DataContext.CopyMessageContentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding Content}"
+                                                   HorizontalAlignment="Right" Background="Transparent" BorderThickness="0"
+                                                   FontSize="14" Cursor="Hand" Padding="5" ToolTip="Kopieren"/>
+                                        </Grid>
+
+                                        <!-- Message Content -->
+                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap" FontSize="13" LineHeight="20"/>
+
+                                        <!-- AI Metadata -->
+                                        <Border Visibility="{Binding IntentDetected, Converter={StaticResource NullToVisibilityConverter}}"
+                                               Background="#FFFFFF80" CornerRadius="5" Padding="8" Margin="0,10,0,0">
+                                            <StackPanel>
+                                                <TextBlock FontSize="10" Foreground="#616161">
+                                                    <Run Text="Intent:"/>
+                                                    <Run Text="{Binding IntentDetected}" FontWeight="Bold"/>
+                                                    <Run Text=" | Confidence:"/>
+                                                    <Run Text="{Binding ConfidenceScore, StringFormat='{}{0:F0}%'}" FontWeight="Bold"/>
+                                                    <Run Text=" | Time:"/>
+                                                    <Run Text="{Binding ProcessingTimeMs, StringFormat='{}{0:F0}ms'}" FontWeight="Bold"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Query Results -->
+                                        <Border Visibility="{Binding HasQueryResults, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                               Background="#FFF9C4" BorderBrush="#FBC02D" BorderThickness="1"
+                                               CornerRadius="5" Padding="10" Margin="0,10,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="📊 Query Ergebnisse:" FontWeight="Bold" FontSize="11" Margin="0,0,0,5"/>
+                                                <ItemsControl ItemsSource="{Binding QueryResults}" MaxHeight="200">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="White" CornerRadius="3" Padding="8" Margin="0,3">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding QueryText}" TextTrimming="CharacterEllipsis"
+                                                                              FontFamily="Consolas" FontSize="10" MaxHeight="30"/>
+                                                                    <TextBlock FontSize="9" Foreground="#757575" Margin="0,3,0,0">
+                                                                        <Run Text="Exec:"/>
+                                                                        <Run Text="{Binding ExecutionCount, StringFormat='{}{0:N0}'}"/>
+                                                                        <Run Text=" | CPU:"/>
+                                                                        <Run Text="{Binding AvgCpuTimeMs, StringFormat='{}{0:F1}ms'}"/>
+                                                                    </TextBlock>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Insights -->
+                                        <Border Visibility="{Binding HasInsights, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                               Background="#F3E5F5" BorderBrush="#9C27B0" BorderThickness="1"
+                                               CornerRadius="5" Padding="10" Margin="0,10,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="💡 Insights:" FontWeight="Bold" FontSize="11" Margin="0,0,0,5"/>
+                                                <ItemsControl ItemsSource="{Binding Insights}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Title}" FontSize="10" Margin="0,2"
+                                                                      TextWrapping="Wrap"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Sidebar: Suggested Questions -->
+            <Border Grid.Column="1" Background="#FFFDE7" BorderBrush="#FBC02D" BorderThickness="2"
+                   CornerRadius="10" Padding="15">
+                <StackPanel>
+                    <TextBlock Text="💡 Vorschläge" FontSize="16" FontWeight="Bold" Foreground="#F57F17" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Klicken Sie auf eine Frage:" FontSize="11" Foreground="#757575" Margin="0,0,0,10"/>
+
+                    <ItemsControl ItemsSource="{Binding SuggestedQuestions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding DataContext.UseSuggestedQuestionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                       CommandParameter="{Binding}"
+                                       Background="#FFF9C4" Foreground="#424242"
+                                       Padding="10,8" Margin="0,0,0,8" BorderThickness="1" BorderBrush="#F9A825"
+                                       Cursor="Hand" HorizontalAlignment="Stretch"
+                                       HorizontalContentAlignment="Left">
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="11"/>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Separator Margin="0,20,0,20"/>
+
+                    <TextBlock Text="📚 Beispiele:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,10"/>
+                    <TextBlock Text="• Welche Queries sind heute langsam?" FontSize="10" Margin="0,0,0,5" TextWrapping="Wrap"/>
+                    <TextBlock Text="• Was kostet mich Query XYZ?" FontSize="10" Margin="0,0,0,5" TextWrapping="Wrap"/>
+                    <TextBlock Text="• Zeig mir Batch Job Probleme" FontSize="10" Margin="0,0,0,5" TextWrapping="Wrap"/>
+                    <TextBlock Text="• Performance Trends letzte Woche" FontSize="10" Margin="0,0,0,5" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Input Area -->
+        <Border Grid.Row="3" Background="#F5F5F5" BorderBrush="#2196F3" BorderThickness="2"
+               CornerRadius="10" Padding="15" Margin="0,20,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" Text="{Binding UserQuery, UpdateSourceTrigger=PropertyChanged}"
+                        FontSize="14" Padding="10" BorderThickness="0" Background="White"
+                        VerticalAlignment="Center" MinHeight="40">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding SendQueryCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+
+                <Button Grid.Column="1" Content="📤 Senden" Command="{Binding SendQueryCommand}"
+                       Background="#2196F3" Foreground="White" FontWeight="Bold"
+                       Width="120" Height="40" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"
+                       IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBoolConverter}}"/>
+            </Grid>
+        </Border>
+
+        <!-- Loading Indicator -->
+        <Border Grid.Row="4" Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"
+               Background="#FFF9C4" BorderBrush="#FBC02D" BorderThickness="1" CornerRadius="5" Padding="15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="⏳" FontSize="20" Margin="0,0,10,0"/>
+                <TextBlock Text="Verarbeite Ihre Anfrage mit AI..." FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
