@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using AX2012PerformanceOptimizer.Core.Services;
 using AX2012PerformanceOptimizer.Core.Models;
 using AX2012PerformanceOptimizer.WpfApp.Services;
+using AX2012PerformanceOptimizer.Data.SqlServer;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Text;
@@ -13,6 +14,7 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
 {
     private readonly IAiPerformanceInsightsService _insightsService;
     private readonly IDialogService _dialogService;
+    private readonly ISqlConnectionManager _connectionManager;
 
     [ObservableProperty]
     private bool isLoading;
@@ -65,11 +67,41 @@ public partial class AiInsightsDashboardViewModel : ObservableObject
     [ObservableProperty]
     private double performanceChange;
 
-    public AiInsightsDashboardViewModel(IAiPerformanceInsightsService insightsService, IDialogService dialogService)
+    public AiInsightsDashboardViewModel(
+        IAiPerformanceInsightsService insightsService,
+        IDialogService dialogService,
+        ISqlConnectionManager connectionManager)
     {
         _insightsService = insightsService;
         _dialogService = dialogService;
-        LoadDashboardAsync();
+        _connectionManager = connectionManager;
+        _connectionManager.ConnectionChanged += OnConnectionChanged;
+
+        // Only load dashboard if already connected
+        if (_connectionManager.IsConnected)
+        {
+            LoadDashboardAsync();
+        }
+    }
+
+    private async void OnConnectionChanged(object? sender, ConnectionChangedEventArgs e)
+    {
+        if (e.IsConnected)
+        {
+            // Connection established - load dashboard with real data
+            StatusMessage = "Verbindung hergestellt - Lade Daten...";
+            await LoadDashboardAsync();
+        }
+        else
+        {
+            // Connection lost - clear dashboard
+            HasDashboard = false;
+            Dashboard = null;
+            TopInsights.Clear();
+            Opportunities.Clear();
+            Risks.Clear();
+            StatusMessage = "Keine Datenbankverbindung - Bitte verbinden Sie sich in Settings";
+        }
     }
 
     [RelayCommand]

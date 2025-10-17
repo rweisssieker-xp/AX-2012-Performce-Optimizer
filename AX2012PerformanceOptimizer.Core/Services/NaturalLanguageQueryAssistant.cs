@@ -49,16 +49,11 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
         // Build AI prompt
         var prompt = BuildAIPrompt(naturalLanguageQuery, intent, context);
 
-        // Call AI service (use ExplainQueryPerformanceAsync with dummy query)
+        // Call AI service directly with the prompt
         string aiResponse;
         try
         {
-            var dummyQuery = new SqlQueryMetric
-            {
-                QueryText = prompt,
-                QueryHash = Guid.NewGuid().ToString()
-            };
-            aiResponse = await _aiService.ExplainQueryPerformanceAsync(dummyQuery);
+            aiResponse = await _aiService.SendPromptAsync(prompt);
         }
         catch (Exception ex)
         {

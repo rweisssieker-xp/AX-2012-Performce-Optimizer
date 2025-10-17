@@ -204,17 +204,37 @@ Return ONLY valid JSON, no markdown or additional text.";
 
     private async Task<string> CallAiApiAsync(string prompt, CancellationToken cancellationToken)
     {
-        var requestBody = new
+        // Build request body based on model capabilities
+        object requestBody;
+
+        // o1 models (o1-preview, o1-mini) don't support temperature or max_completion_tokens
+        if (_model.StartsWith("o1-", StringComparison.OrdinalIgnoreCase))
         {
-            model = _model,
-            messages = new[]
+            requestBody = new
             {
-                new { role = "system", content = "You are an expert SQL Server and Microsoft Dynamics AX 2012 performance consultant." },
-                new { role = "user", content = prompt }
-            },
-            temperature = 0.3,
-            max_tokens = 2000
-        };
+                model = _model,
+                messages = new[]
+                {
+                    new { role = "user", content = prompt }  // o1 models don't use system messages
+                }
+            };
+        }
+        else
+        {
+            // For all other models: use minimal configuration to maximize compatibility
+            // This works with gpt-4o, gpt-4-turbo, gpt-4o-mini, gpt-3.5-turbo, and custom models
+            requestBody = new
+            {
+                model = _model,
+                messages = new[]
+                {
+                    new { role = "system", content = "You are an expert SQL Server and Microsoft Dynamics AX 2012 performance consultant." },
+                    new { role = "user", content = prompt }
+                }
+                // No temperature or max_completion_tokens - let the API use defaults
+                // This ensures compatibility with custom/unknown models
+            };
+        }
 
         var content = new StringContent(
             JsonSerializer.Serialize(requestBody),
@@ -226,7 +246,15 @@ Return ONLY valid JSON, no markdown or additional text.";
             : $"{_endpoint}/v1/chat/completions";
 
         var response = await _httpClient.PostAsync(url, content, cancellationToken);
-        response.EnsureSuccessStatusCode();
+
+        // Enhanced error handling: capture response body on failure
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("AI API call failed with status {StatusCode}. Response: {ErrorBody}",
+                response.StatusCode, errorBody);
+            throw new HttpRequestException($"AI API returned {response.StatusCode}: {errorBody}");
+        }
 
         var responseBody = await response.Content.ReadFromJsonAsync<OpenAiResponse>(cancellationToken);
         return responseBody?.Choices?.FirstOrDefault()?.Message?.Content ?? "No response";
@@ -693,6 +721,24 @@ Return ONLY a valid JSON array of strings.";
         {
             _logger.LogError(ex, "Error getting AX-specific insights");
             return new List<string>();
+        }
+    }
+
+    public async Task<string> SendPromptAsync(string prompt, CancellationToken cancellationToken = default)
+    {
+        if (!IsAvailable)
+        {
+            return "AI service is not configured. Please set API key in Settings.";
+        }
+
+        try
+        {
+            return await CallAiApiAsync(prompt, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending prompt to AI");
+            return $"Error: {ex.Message}";
         }
     }
 

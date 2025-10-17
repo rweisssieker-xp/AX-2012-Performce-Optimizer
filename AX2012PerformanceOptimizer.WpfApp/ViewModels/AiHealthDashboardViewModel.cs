@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using AX2012PerformanceOptimizer.Core.Models;
 using AX2012PerformanceOptimizer.Core.Services;
 using AX2012PerformanceOptimizer.WpfApp.Services;
+using AX2012PerformanceOptimizer.Data.SqlServer;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -12,6 +13,7 @@ public partial class AiHealthDashboardViewModel : ObservableObject
 {
     private readonly ISystemHealthScoreService _healthScoreService;
     private readonly IDialogService _dialogService;
+    private readonly ISqlConnectionManager _connectionManager;
 
     [ObservableProperty]
     private bool isLoading;
@@ -70,10 +72,49 @@ public partial class AiHealthDashboardViewModel : ObservableObject
     [ObservableProperty]
     private HealthAction? topImpactAction;
 
-    public AiHealthDashboardViewModel(ISystemHealthScoreService healthScoreService, IDialogService dialogService)
+    public AiHealthDashboardViewModel(
+        ISystemHealthScoreService healthScoreService,
+        IDialogService dialogService,
+        ISqlConnectionManager connectionManager)
     {
         _healthScoreService = healthScoreService;
         _dialogService = dialogService;
+        _connectionManager = connectionManager;
+        _connectionManager.ConnectionChanged += OnConnectionChanged;
+
+        // Update initial status based on connection
+        if (!_connectionManager.IsConnected)
+        {
+            StatusMessage = "Keine Datenbankverbindung - Bitte verbinden Sie sich in Settings";
+        }
+    }
+
+    private async void OnConnectionChanged(object? sender, ConnectionChangedEventArgs e)
+    {
+        if (e.IsConnected)
+        {
+            // Connection established - enable health score calculation
+            StatusMessage = "Verbindung hergestellt - Bereit für Health Score Berechnung";
+
+            // Optionally auto-calculate health score on connection
+            // Uncomment if you want automatic calculation:
+            // await CalculateHealthScoreAsync();
+        }
+        else
+        {
+            // Connection lost - clear health score
+            CurrentHealthScore = null;
+            RecommendedActions.Clear();
+            ScoreHistory.Clear();
+            TopImpactAction = null;
+            SqlPerformanceCategory = null;
+            IndexHealthCategory = null;
+            BatchJobsCategory = null;
+            DatabaseSizeCategory = null;
+            OverallScore = 0;
+            HealthStatus = string.Empty;
+            StatusMessage = "Keine Datenbankverbindung - Bitte verbinden Sie sich in Settings";
+        }
     }
 
     [RelayCommand]

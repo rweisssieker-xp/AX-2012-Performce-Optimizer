@@ -24,15 +24,23 @@ public enum RecommendationCategory
     AosConfiguration,
     DatabaseMaintenance,
     MemoryOptimization,
-    StorageOptimization
+    StorageOptimization,
+    // Server Configuration Categories
+    Memory,
+    Parallelism,
+    Performance,
+    Backup,
+    Security,
+    Maintenance,
+    General
 }
 
 public enum RecommendationPriority
 {
-    Critical = 1,
-    High = 2,
-    Medium = 3,
-    Low = 4,
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Critical = 4,
     Informational = 5
 }
 

@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AX2012PerformanceOptimizer.Core.Services;
 using AX2012PerformanceOptimizer.Core.Models;
+using AX2012PerformanceOptimizer.Data.SqlServer;
 using System.Collections.ObjectModel;
 
 namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
@@ -9,6 +10,7 @@ namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
 public partial class DatabaseHealthViewModel : ObservableObject
 {
     private readonly IDatabaseStatsService _databaseStats;
+    private readonly ISqlConnectionManager _connectionManager;
 
     [ObservableProperty]
     private DatabaseMetric? currentMetrics;
@@ -25,9 +27,47 @@ public partial class DatabaseHealthViewModel : ObservableObject
     [ObservableProperty]
     private bool isLoading;
 
-    public DatabaseHealthViewModel(IDatabaseStatsService databaseStats)
+    [ObservableProperty]
+    private string statusMessage = "No database connection - Please connect in Settings";
+
+    [ObservableProperty]
+    private bool isConnected;
+
+    public DatabaseHealthViewModel(
+        IDatabaseStatsService databaseStats,
+        ISqlConnectionManager connectionManager)
     {
         _databaseStats = databaseStats;
+        _connectionManager = connectionManager;
+        _connectionManager.ConnectionChanged += OnConnectionChanged;
+
+        // Check initial connection status
+        IsConnected = _connectionManager.IsConnected;
+        if (!IsConnected)
+        {
+            StatusMessage = "No database connection - Please connect in Settings";
+        }
+    }
+
+    private async void OnConnectionChanged(object? sender, ConnectionChangedEventArgs e)
+    {
+        IsConnected = e.IsConnected;
+
+        if (e.IsConnected)
+        {
+            StatusMessage = $"Connected to {e.DatabaseName} on {e.ServerName}";
+            // Auto-load data when connection is established
+            await LoadDataAsync();
+        }
+        else
+        {
+            StatusMessage = "Database connection lost - Please reconnect in Settings";
+            // Clear data when connection is lost
+            CurrentMetrics = null;
+            TopTables.Clear();
+            FragmentedIndexes.Clear();
+            MissingIndexes.Clear();
+        }
     }
 
     [RelayCommand]

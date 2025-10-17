@@ -146,7 +146,7 @@
                                              Visibility="{Binding SqlPerformanceCategory.Issues.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -155,7 +155,7 @@
                                              Visibility="{Binding SqlPerformanceCategory.Improvements.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -187,7 +187,7 @@
                                              Visibility="{Binding IndexHealthCategory.Issues.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -196,7 +196,7 @@
                                              Visibility="{Binding IndexHealthCategory.Improvements.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -228,7 +228,7 @@
                                              Visibility="{Binding BatchJobsCategory.Issues.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -237,7 +237,7 @@
                                              Visibility="{Binding BatchJobsCategory.Improvements.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -269,7 +269,7 @@
                                              Visibility="{Binding DatabaseSizeCategory.Issues.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#F44336" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -278,7 +278,7 @@
                                              Visibility="{Binding DatabaseSizeCategory.Improvements.Count, Converter={StaticResource IntToVisibilityConverter}}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
+                                            <TextBlock Text="{Binding Mode=OneWay}" FontSize="11" Foreground="#4CAF50" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>

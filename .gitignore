@@ -439,3 +439,42 @@ ehthumbs_vista.db
 $RECYCLE.BIN/
 *.lnk
 
+## AX 2012 Performance Optimizer Specific
+
+# User configuration files (contain sensitive data like API keys, database credentials)
+**/ai-config.json
+**/profiles.json
+
+# Local application data directory (user-specific settings)
+%LocalAppData%/AX2012PerformanceOptimizer/
+
+# Exported reports and data files
+*_Export_*.csv
+*_Export_*.txt
+*_Export_*.md
+*_Export_*.sql
+Query_Documentation_*.md
+Fixed_Query_*.sql
+SQL_Performance_*.csv
+AI_Performance_Dashboard_*.txt
+NL_Conversation_*.txt
+HealthScore_*.txt
+
+# Build and publish output
+publish/
+[Pp]ublish/
+build-output/
+release/
+
+# Application logs
+app-logs/
+*.application.log
+
+# Temporary cache files
+cache/
+*.cache.json
+
+# Test data
+test-data/
+sample-*.json
+

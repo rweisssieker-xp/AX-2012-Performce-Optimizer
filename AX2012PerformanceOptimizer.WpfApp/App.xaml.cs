@@ -34,6 +34,7 @@ public partial class App : Application
                 services.AddSingleton<IAifMonitorService, AifMonitorService>();
                 services.AddSingleton<ISsrsMonitorService, SsrsMonitorService>();
                 services.AddSingleton<IDatabaseStatsService, DatabaseStatsService>();
+                services.AddSingleton<IServerConfigurationService, ServerConfigurationService>();
 
                 // Analysis
                 services.AddSingleton<IRecommendationEngine, RecommendationEngine>();
@@ -210,6 +211,9 @@ public partial class App : Application
                 services.AddTransient<NaturalLanguageAssistantViewModel>();
                 services.AddTransient<AiInsightsDashboardViewModel>();
                 services.AddTransient<AiHealthDashboardViewModel>();
+
+                // Server Settings ViewModel
+                services.AddTransient<ServerSettingsViewModel>();
 
                 // Windows (not registered as singleton - created via XAML)
             })

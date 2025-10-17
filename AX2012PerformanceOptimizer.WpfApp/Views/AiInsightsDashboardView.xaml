@@ -165,9 +165,9 @@
                                                 <ItemsControl ItemsSource="{Binding RecommendedActions}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding}" FontSize="10" Margin="0,2" TextWrapping="Wrap">
+                                                            <TextBlock FontSize="10" Margin="0,2" TextWrapping="Wrap">
                                                                 <Run Text="• "/>
-                                                                <Run Text="{Binding}"/>
+                                                                <Run Text="{Binding Mode=OneWay}"/>
                                                             </TextBlock>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
@@ -294,9 +294,9 @@
                                                 <ItemsControl ItemsSource="{Binding MitigationActions}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding}" FontSize="10" Margin="0,2" TextWrapping="Wrap">
+                                                            <TextBlock FontSize="10" Margin="0,2" TextWrapping="Wrap">
                                                                 <Run Text="• "/>
-                                                                <Run Text="{Binding}"/>
+                                                                <Run Text="{Binding Mode=OneWay}"/>
                                                             </TextBlock>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>

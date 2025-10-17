@@ -1,10 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Select-Object Id, ProcessName, StartTime)",
-      "Bash(Select-String \"error|warning|succeeded|failed\")",
-      "Bash(Stop-Process -Force -ErrorAction SilentlyContinue)",
-      "Bash(Start-Sleep -Seconds 2)"
+      "Bash(taskkill:*)",
+      "Bash(Start-Sleep -Seconds 3)",
+      "Bash(Start-Process \"./AX2012PerformanceOptimizer.WpfApp.exe\")",
+      "Bash(./AX2012PerformanceOptimizer.WpfApp.exe)",
+      "Bash(Start-Sleep -Seconds 5)",
+      "Bash(explorer .)",
+      "Bash(Remove-Item -Recurse -Force \"C:\\tmp\\AX-2012-Performce-Optimizer\\AX2012PerformanceOptimizer.App\")",
+      "Bash(dotnet sln:*)"
     ],
     "deny": [],
     "ask": []

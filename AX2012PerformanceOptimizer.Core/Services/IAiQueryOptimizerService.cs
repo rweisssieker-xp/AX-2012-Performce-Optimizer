@@ -56,4 +56,9 @@ public interface IAiQueryOptimizerService
     /// Checks if AI service is configured and available
     /// </summary>
     bool IsAvailable { get; }
+
+    /// <summary>
+    /// Sends a direct prompt to the AI service without query-specific formatting
+    /// </summary>
+    Task<string> SendPromptAsync(string prompt, CancellationToken cancellationToken = default);
 }

@@ -194,12 +194,12 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Button Command="{Binding DataContext.UseSuggestedQuestionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                       CommandParameter="{Binding}"
+                                       CommandParameter="{Binding Mode=OneWay}"
                                        Background="#FFF9C4" Foreground="#424242"
                                        Padding="10,8" Margin="0,0,0,8" BorderThickness="1" BorderBrush="#F9A825"
                                        Cursor="Hand" HorizontalAlignment="Stretch"
                                        HorizontalContentAlignment="Left">
-                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="11"/>
+                                    <TextBlock Text="{Binding Mode=OneWay}" TextWrapping="Wrap" FontSize="11"/>
                                 </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

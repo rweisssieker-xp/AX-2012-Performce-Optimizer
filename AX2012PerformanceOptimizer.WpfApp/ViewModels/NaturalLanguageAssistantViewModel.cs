@@ -44,7 +44,44 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
     {
         _assistant = assistant;
         _connectionManager = connectionManager;
+        _connectionManager.ConnectionChanged += OnConnectionChanged;
         InitializeAsync();
+    }
+
+    private void OnConnectionChanged(object? sender, ConnectionChangedEventArgs e)
+    {
+        IsDatabaseConnected = e.IsConnected;
+
+        if (e.IsConnected)
+        {
+            // Connection established - exit demo mode
+            ConnectionWarning = string.Empty;
+            StatusMessage = "Verbunden - Bereit für echte Daten";
+
+            // Add notification to conversation
+            ConversationHistory.Add(new ConversationMessage
+            {
+                Role = "System",
+                Content = "✅ Datenbankverbindung hergestellt!\n\nSie können jetzt echte Performance-Daten abfragen.",
+                Timestamp = DateTime.Now,
+                IsUser = false
+            });
+        }
+        else
+        {
+            // Connection lost - enter demo mode
+            ConnectionWarning = "⚠️ Demo-Modus: Bitte verbinden Sie sich mit einer Datenbank für echte Daten";
+            StatusMessage = "Demo-Modus aktiv - Beispiel-Daten werden verwendet";
+
+            // Add notification to conversation
+            ConversationHistory.Add(new ConversationMessage
+            {
+                Role = "System",
+                Content = "⚠️ Datenbankverbindung getrennt!\n\nDemo-Modus aktiv - Es werden Beispiel-Daten angezeigt.",
+                Timestamp = DateTime.Now,
+                IsUser = false
+            });
+        }
     }
 
     private async void InitializeAsync()
