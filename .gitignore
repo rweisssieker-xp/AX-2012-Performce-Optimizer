@@ -446,6 +446,8 @@ $RECYCLE.BIN/
 .cascade/
 .cursor/
 .aider/
+.bmad-core/
+.claude/
 
 # User configuration files (contain sensitive data like API keys, database credentials)
 **/ai-config.json
