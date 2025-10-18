@@ -441,6 +441,12 @@ $RECYCLE.BIN/
 
 ## AX 2012 Performance Optimizer Specific
 
+# AI Assistant directories (Windsurf, Cascade, Cursor, etc.)
+.windsurf/
+.cascade/
+.cursor/
+.aider/
+
 # User configuration files (contain sensitive data like API keys, database credentials)
 **/ai-config.json
 **/profiles.json
