@@ -9,7 +9,11 @@
       "Bash(taskkill:*)",
       "Bash(powershell -Command:*)",
       "Bash(tasklist:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nRemove AI assistant directories from repository and update gitignore\n\n- Remove .windsurf/ directory with workflows and rules from tracking\n- Add .windsurf/, .cascade/, .cursor/, and .aider/ to .gitignore\n- These directories contain environment-specific AI assistant configurations\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
