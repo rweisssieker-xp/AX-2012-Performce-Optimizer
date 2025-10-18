@@ -5,6 +5,7 @@ using AX2012PerformanceOptimizer.Data.Configuration;
 using AX2012PerformanceOptimizer.Data.SqlServer;
 using System.Collections.ObjectModel;
 using Microsoft.Data.SqlClient;
+using System.IO;
 
 namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
 
@@ -200,6 +201,45 @@ public partial class SettingsViewModel : ObservableObject
             {
                 StatusMessage = $"Connection error: {ex.Message}";
             }
+        }
+    }
+
+    [RelayCommand]
+    private async Task ExportProfilesAsync()
+    {
+        try
+        {
+            var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            var fileName = $"AX2012Profiles_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+            var path = Path.Combine(desktop, fileName);
+            await _configService.ExportProfilesAsync(path);
+            StatusMessage = $"✅ Profiles exported to {path}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"❌ Export failed: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task ImportProfilesAsync()
+    {
+        try
+        {
+            var desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            var defaultPath = Path.Combine(desktop, "AX2012Profiles_Import.json");
+            if (!File.Exists(defaultPath))
+            {
+                StatusMessage = $"⚠️ Import file not found: {defaultPath}";
+                return;
+            }
+            await _configService.ImportProfilesAsync(defaultPath, merge: true);
+            await LoadProfilesAsync();
+            StatusMessage = "✅ Profiles imported successfully";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"❌ Import failed: {ex.Message}";
         }
     }
 

@@ -45,7 +45,7 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
         _assistant = assistant;
         _connectionManager = connectionManager;
         _connectionManager.ConnectionChanged += OnConnectionChanged;
-        InitializeAsync();
+        _ = InitializeAsync(); // Fire and forget with proper error handling inside
     }
 
     private void OnConnectionChanged(object? sender, ConnectionChangedEventArgs e)
@@ -84,9 +84,17 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
         }
     }
 
-    private async void InitializeAsync()
+    private async Task InitializeAsync()
     {
-        _sessionId = await _assistant.StartNewSessionAsync();
+        try
+        {
+            _sessionId = await _assistant.StartNewSessionAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"⚠️ Initialisierungsfehler: {ex.Message}";
+            _sessionId = Guid.NewGuid().ToString();
+        }
 
         // Check connection status
         IsDatabaseConnected = _connectionManager.IsConnected;
@@ -94,6 +102,14 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
         // Build welcome message based on connection status
         var welcomeMessage = new System.Text.StringBuilder();
         welcomeMessage.AppendLine("👋 Willkommen beim AI Performance Assistant!");
+        welcomeMessage.AppendLine();
+
+        // Add AI configuration warning
+        // Note: We can't directly check _aiService.IsAvailable from NL Assistant
+        // But users will get helpful fallback responses if AI is not configured
+        welcomeMessage.AppendLine("💡 **Wichtige Hinweise:**");
+        welcomeMessage.AppendLine("   • Für AI-gestützte Antworten: OpenAI API Key in Settings konfigurieren");
+        welcomeMessage.AppendLine("   • Ohne AI: Intelligente Fallback-Antworten mit echten Performance-Daten");
         welcomeMessage.AppendLine();
 
         if (!IsDatabaseConnected)
@@ -169,8 +185,17 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
                 ConversationHistory = new List<NLConversationMessage>()
             };
 
-            // Process query
-            var response = await _assistant.ProcessQueryAsync(query, context);
+            // Process query with timeout protection (30 seconds)
+            var responseTask = _assistant.ProcessQueryAsync(query, context);
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
+            var completedTask = await Task.WhenAny(responseTask, timeoutTask);
+            
+            if (completedTask == timeoutTask)
+            {
+                throw new TimeoutException("Die Anfrage hat zu lange gedauert (>30s). Bitte überprüfen Sie Ihre AI-Konfiguration.");
+            }
+            
+            var response = await responseTask;
 
             // Add assistant response
             var assistantMessage = new ConversationMessage
@@ -255,7 +280,7 @@ public partial class NaturalLanguageAssistantViewModel : ObservableObject
             HasConversation = false;
 
             // Re-initialize
-            InitializeAsync();
+            await InitializeAsync();
         }
     }
 

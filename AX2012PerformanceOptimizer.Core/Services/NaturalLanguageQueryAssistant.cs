@@ -53,7 +53,24 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
         string aiResponse;
         try
         {
-            aiResponse = await _aiService.SendPromptAsync(prompt);
+            // Check if AI service is available before calling
+            if (_aiService.IsAvailable)
+            {
+                aiResponse = await _aiService.SendPromptAsync(prompt);
+
+                // Check if response indicates configuration issue
+                if (aiResponse.Contains("AI service is not configured") ||
+                    aiResponse.StartsWith("Error:"))
+                {
+                    _logger.LogWarning("AI service returned configuration error, using fallback");
+                    aiResponse = GenerateFallbackResponse(naturalLanguageQuery, intent);
+                }
+            }
+            else
+            {
+                _logger.LogInformation("AI service not available, using fallback response");
+                aiResponse = GenerateFallbackResponse(naturalLanguageQuery, intent);
+            }
         }
         catch (Exception ex)
         {
@@ -72,8 +89,8 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
             ProcessingTimeMs = (DateTime.Now - startTime).TotalMilliseconds
         };
 
-        // Generate sample data based on intent
-        response = EnrichResponseWithData(response, intent, context);
+        // Generate sample data based on intent (with timeout protection)
+        response = await EnrichResponseWithDataAsync(response, intent, context);
 
         // Generate suggested follow-up questions
         response.SuggestedQuestions = GenerateSuggestedQuestions(intent, response);
@@ -205,15 +222,169 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
 
     private string GenerateFallbackResponse(string query, string intent)
     {
-        return intent switch
+        var prefix = "💡 **Intelligente Analyse** (Demo-Modus)\n\n";
+
+        var response = intent switch
         {
-            "PerformanceIssue" => "Ich analysiere Performance-Probleme in Ihrem System. Basierend auf typischen Mustern sollten Sie die TOP 10 langsamsten Queries überprüfen und Indexes optimieren.",
-            "CostAnalysis" => "Für eine Kosten-Analyse empfehle ich, den Performance Cost Calculator zu verwenden. Dieser zeigt Ihnen die monetären Auswirkungen langsamer Queries.",
-            "Recommendation" => "Meine Top-Empfehlungen: 1) Index-Optimierung für häufige Queries, 2) Batch-Job Scheduling optimieren, 3) Query-Clustering für Bulk-Optimierung nutzen.",
-            "BatchJob" => "Für Batch-Job Optimierung empfehle ich den Smart Batching Advisor. Dieser analysiert Batch-Größen, Scheduling und Anti-Patterns.",
-            "QueryAnalysis" => "Nutzen Sie die Query Correlation Engine um versteckte Beziehungen zwischen Queries zu finden und das Query Clustering für Bulk-Optimierungen.",
-            _ => $"Ich habe Ihre Frage verstanden: '{query}'. Können Sie spezifischer sein? Z.B.: 'Zeig mir die langsamsten Queries heute' oder 'Was kostet mich Query XYZ?'"
+            "PerformanceIssue" => @"Ich analysiere Performance-Probleme in Ihrem System.
+
+📊 **Typische Performance-Bottlenecks:**
+• **Langsame Queries**: Überprüfen Sie die TOP 10 langsamsten Queries im SQL Performance Tab
+• **Fehlende Indexes**: Nutzen Sie die Index-Empfehlungen für häufig genutzte Tabellen
+• **Hohe CPU-Last**: Analysieren Sie Queries mit hoher CPU-Zeit (>1000ms)
+• **I/O-Probleme**: Prüfen Sie Physical Reads - sollten minimal sein
+
+🔍 **Nächste Schritte:**
+1. Gehen Sie zum 'SQL Performance' Tab
+2. Sortieren Sie nach Total Elapsed Time
+3. Analysieren Sie die Top 5 Queries
+4. Nutzen Sie die AI-Analyse für detaillierte Empfehlungen",
+
+            "CostAnalysis" => @"💰 **Performance-Kosten Analyse**
+
+Für eine detaillierte Kosten-Analyse:
+
+📈 **Performance Cost Calculator nutzen:**
+• Monetäre Auswirkung langsamer Queries berechnen
+• ROI von Optimierungen kalkulieren
+• Tages-, Monats- und Jahreskosten ermitteln
+
+📊 **Typische Kostenverursacher:**
+• Queries mit >1000ms durchschnittlicher Laufzeit
+• Hohe Execution Counts (>10.000/Tag)
+• Queries mit vielen Physical Reads
+
+💡 **Tipp:** Eine Query-Optimierung von 2s auf 200ms spart bei 1000 Executions/Tag ca. 30 Minuten CPU-Zeit täglich!",
+
+            "Recommendation" => @"🎯 **Top Performance-Empfehlungen**
+
+**Sofort umsetzbar (Quick Wins):**
+1. **Index-Optimierung**
+   • Fehlende Indexes erstellen (siehe SQL Performance Tab)
+   • Fragmentierte Indexes neu aufbauen
+   • Ungenutzte Indexes entfernen
+
+2. **Query-Optimierung**
+   • SELECT * vermeiden
+   • WHERE-Klauseln mit Indexes versehen
+   • Joins optimieren (INNER statt OUTER wo möglich)
+
+3. **Batch-Job Scheduling**
+   • CPU-intensive Jobs außerhalb der Geschäftszeiten
+   • Batch-Größen optimieren
+   • Parallele Verarbeitung nutzen
+
+4. **Monitoring & Trending**
+   • Performance-Trends beobachten (Historical Trending Tab)
+   • Alerts für kritische Queries einrichten
+   • Regelmäßige Performance-Reviews",
+
+            "BatchJob" => @"⏱️ **Batch-Job Performance-Optimierung**
+
+**Analyse-Empfehlungen:**
+• Nutzen Sie den **Smart Batching Advisor** für intelligente Batch-Größen-Empfehlungen
+• Prüfen Sie Batch-Job Queries im SQL Performance Tab
+• Analysieren Sie Batch-Job Laufzeiten (Batch Jobs Tab)
+
+**Typische Optimierungen:**
+1. **Scheduling**: CPU-intensive Jobs nachts/am Wochenende
+2. **Batch-Größe**: Optimal zwischen 50-200 Datensätzen
+3. **Parallelisierung**: Mehrere Batch-Threads für große Jobs
+4. **Commit-Strategie**: Transaktionsgröße anpassen
+
+**Anti-Patterns vermeiden:**
+❌ Zu kleine Batches (<10) → zu viel Overhead
+❌ Zu große Batches (>500) → lange Locks
+❌ Keine Error-Handling → Komplette Rollbacks",
+
+            "QueryAnalysis" => @"🔎 **Query-Analyse Tools**
+
+**Verfügbare Analyse-Features:**
+
+1. **Query Correlation Engine**
+   • Versteckte Beziehungen zwischen Queries finden
+   • Gemeinsame Muster erkennen
+   • Bulk-Optimierungen identifizieren
+
+2. **Query Clustering**
+   • Ähnliche Queries gruppieren
+   • Gemeinsame Optimierungen anwenden
+   • Duplicate Queries eliminieren
+
+3. **Execution Plan Analyzer**
+   • Execution Plans visualisieren
+   • Bottlenecks identifizieren
+   • Index-Hints generieren
+
+4. **Real-Time Monitoring**
+   • Laufende Queries beobachten
+   • Performance-Anomalien erkennen
+   • Alert-System nutzen",
+
+            "TimeBasedQuery" => @"📅 **Zeitbasierte Performance-Analyse**
+
+Ich analysiere Performance-Daten für Ihren gewählten Zeitraum.
+
+**Verfügbare Zeiträume:**
+• Heute (letzte 24 Stunden)
+• Gestern
+• Letzte 7 Tage
+• Letzte 30 Tage
+• Benutzerdefiniert
+
+**Analysierte Metriken:**
+• Query Execution Counts
+• Durchschnittliche Laufzeiten
+• CPU-Auslastung
+• I/O-Statistiken
+• Performance-Trends
+
+💡 **Tipp:** Nutzen Sie den 'Historical Trending' Tab für detaillierte Zeitreihen-Analysen!",
+
+            "Trend" => @"📈 **Performance-Trend Analyse**
+
+**Trend-Analysen verfügbar:**
+
+1. **Query Performance Trends**
+   • Laufzeit-Entwicklung über Zeit
+   • CPU-Auslastung Trends
+   • I/O-Performance
+
+2. **System Health Trends**
+   • Datenbank-Größe
+   • Connection Counts
+   • Lock-Statistiken
+
+3. **Predictive Analytics**
+   • Performance-Vorhersagen (Crystal Ball)
+   • Capacity Planning
+   • Bottleneck-Prognosen
+
+🔮 **Crystal Ball Feature nutzen:**
+Gehen Sie zum 'Crystal Ball' Tab für What-If-Szenarien und Performance-Vorhersagen!",
+
+            _ => $@"❓ **Ihre Frage:** ""{query}""
+
+Ich habe Ihre Frage analysiert. Für bessere Ergebnisse, formulieren Sie Ihre Frage spezifischer:
+
+**Beispiel-Fragen:**
+• ""Zeig mir die langsamsten Queries heute""
+• ""Was kostet mich die schlechte Performance?""
+• ""Welche Indexes sollte ich erstellen?""
+• ""Wie optimiere ich Batch Jobs?""
+• ""Zeig mir Performance-Trends der letzten Woche""
+
+**Verfügbare Features:**
+• SQL Performance Analysis
+• Batch Job Monitoring
+• Cost Calculator
+• AI Insights Dashboard
+• Performance DNA & Crystal Ball
+
+💡 **Hinweis:** Für AI-gestützte Antworten konfigurieren Sie bitte einen OpenAI API Key im Settings Tab!"
         };
+
+        return prefix + response;
     }
 
     private double CalculateConfidence(string intent, List<string> entities)
@@ -223,103 +394,160 @@ public class NaturalLanguageQueryAssistant : INaturalLanguageQueryAssistant
         return Math.Min(baseConfidence + entityBonus, 95.0);
     }
 
-    private NLQueryResponse EnrichResponseWithData(NLQueryResponse response, string intent, NLQueryContext context)
+    private async Task<NLQueryResponse> EnrichResponseWithDataAsync(NLQueryResponse response, string intent, NLQueryContext context)
     {
-        // Enrich response with real data based on intent
+        // Enrich response with real data based on intent - with timeout protection
         try
         {
+            // Use Task.WhenAny for timeout protection without CancellationToken
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(5));
+
             switch (intent)
             {
                 case "PerformanceIssue":
                 case "QueryAnalysis":
                 case "TimeBasedQuery":
-                    // Get real query data from database
-                    var queries = _queryMonitorService.GetTopExpensiveQueriesAsync(10).GetAwaiter().GetResult();
-                    response.QueryResults = queries.ToList();
-                    response.VisualizationType = "Table";
+                    // Get real query data from database with timeout
+                    var queriesTask = _queryMonitorService.GetTopExpensiveQueriesAsync(10);
+                    if (await Task.WhenAny(queriesTask, timeoutTask) == queriesTask)
+                    {
+                        var queries = await queriesTask;
+                        response.QueryResults = queries.ToList();
+                        response.VisualizationType = "Table";
+                    }
+                    else
+                    {
+                        throw new TimeoutException("Query data retrieval timed out");
+                    }
                     break;
 
                 case "CostAnalysis":
                     // Calculate real costs using cost calculator
-                    var allQueries = _queryMonitorService.GetTopExpensiveQueriesAsync(100).GetAwaiter().GetResult();
-                    var costParams = new CostParameters();
-                    var costReport = _costCalculatorService.GenerateExecutiveSummaryAsync(allQueries.ToList(), costParams).GetAwaiter().GetResult();
-
-                    response.AdditionalData = new Dictionary<string, object>
+                    var allQueriesTask = _queryMonitorService.GetTopExpensiveQueriesAsync(100);
+                    if (await Task.WhenAny(allQueriesTask, timeoutTask) == allQueriesTask)
                     {
-                        { "DailyCost", costReport.TotalDailyCost },
-                        { "MonthlyCost", costReport.TotalMonthlyCost },
-                        { "YearlyCost", costReport.TotalYearlyCost },
-                        { "Currency", "EUR" },
-                        { "TotalQueries", costReport.TotalQueriesAnalyzed }
-                    };
-                    response.VisualizationType = "Chart";
+                        var allQueries = await allQueriesTask;
+                        var costParams = new CostParameters();
+                        var costReport = await _costCalculatorService.GenerateExecutiveSummaryAsync(allQueries.ToList(), costParams);
+
+                        response.AdditionalData = new Dictionary<string, object>
+                        {
+                            { "DailyCost", costReport.TotalDailyCost },
+                            { "MonthlyCost", costReport.TotalMonthlyCost },
+                            { "YearlyCost", costReport.TotalYearlyCost },
+                            { "Currency", "EUR" },
+                            { "TotalQueries", costReport.TotalQueriesAnalyzed }
+                        };
+                        response.VisualizationType = "Chart";
+                    }
+                    else
+                    {
+                        throw new TimeoutException("Cost analysis timed out");
+                    }
                     break;
 
                 case "Trend":
                     // Get real trend data from historical service
-                    var trendData = _historicalDataService.AnalyzeTrendAsync(
+                    var trendTask = _historicalDataService.AnalyzeTrendAsync(
                         "QueryPerformance",
                         context.StartDate,
-                        context.EndDate).GetAwaiter().GetResult();
+                        context.EndDate);
 
-                    response.AdditionalData = new Dictionary<string, object>
+                    if (await Task.WhenAny(trendTask, timeoutTask) == trendTask)
                     {
-                        { "TrendDirection", trendData.Trend.ToString() },
-                        { "PerformanceChange", trendData.ChangePercent },
-                        { "CurrentValue", trendData.CurrentValue },
-                        { "AverageValue", trendData.AverageValue }
-                    };
-                    response.VisualizationType = "Timeline";
+                        var trendData = await trendTask;
+                        response.AdditionalData = new Dictionary<string, object>
+                        {
+                            { "TrendDirection", trendData.Trend.ToString() },
+                            { "PerformanceChange", trendData.ChangePercent },
+                            { "CurrentValue", trendData.CurrentValue },
+                            { "AverageValue", trendData.AverageValue }
+                        };
+                        response.VisualizationType = "Timeline";
+                    }
+                    else
+                    {
+                        throw new TimeoutException("Trend analysis timed out");
+                    }
                     break;
 
                 case "Recommendation":
                     // Get real optimization suggestions from analyzer
-                    var topQueries = _queryMonitorService.GetTopExpensiveQueriesAsync(5).GetAwaiter().GetResult();
-                    var suggestions = new List<PerformanceInsight>();
-
-                    foreach (var query in topQueries)
+                    var topQueriesTask = _queryMonitorService.GetTopExpensiveQueriesAsync(5);
+                    if (await Task.WhenAny(topQueriesTask, timeoutTask) == topQueriesTask)
                     {
-                        var suggestionList = _queryAnalyzerService.AnalyzeQueryAsync(query).GetAwaiter().GetResult();
-                        if (suggestionList != null && suggestionList.Any())
-                        {
-                            var firstSuggestion = suggestionList.First();
-                            suggestions.Add(new PerformanceInsight
-                            {
-                                Title = $"Optimierung für Query {query.QueryHash.Substring(0, 8)}",
-                                Description = string.Join(", ", suggestionList.Select(s => s.Title).Take(3)),
-                                Severity = firstSuggestion.Severity == SuggestionSeverity.Critical ? "High" : "Medium",
-                                ImpactArea = "Queries",
-                                ImpactScore = firstSuggestion.EstimatedImpact,
-                                RecommendedActions = suggestionList.Select(s => s.Title).ToList(),
-                                PotentialImprovement = suggestionList.Any(s => s.EstimatedImpact > 0)
-                                    ? suggestionList.Max(s => s.EstimatedImpact) : 0,
-                                ConfidenceScore = 85.0,
-                                Category = "Performance"
-                            });
-                        }
-                    }
+                        var topQueries = await topQueriesTask;
+                        var suggestions = new List<PerformanceInsight>();
 
-                    response.Insights = suggestions;
-                    response.VisualizationType = "None";
+                        foreach (var query in topQueries.Take(3)) // Limit to 3 for performance
+                        {
+                            var suggestionList = await _queryAnalyzerService.AnalyzeQueryAsync(query);
+                            if (suggestionList != null && suggestionList.Any())
+                            {
+                                var firstSuggestion = suggestionList.First();
+                                suggestions.Add(new PerformanceInsight
+                                {
+                                    Title = $"Optimierung für Query {query.QueryHash.Substring(0, 8)}",
+                                    Description = string.Join(", ", suggestionList.Select(s => s.Title).Take(3)),
+                                    Severity = firstSuggestion.Severity == SuggestionSeverity.Critical ? "High" : "Medium",
+                                    ImpactArea = "Queries",
+                                    ImpactScore = firstSuggestion.EstimatedImpact,
+                                    RecommendedActions = suggestionList.Select(s => s.Title).ToList(),
+                                    PotentialImprovement = suggestionList.Any(s => s.EstimatedImpact > 0)
+                                        ? suggestionList.Max(s => s.EstimatedImpact) : 0,
+                                    ConfidenceScore = 85.0,
+                                    Category = "Performance"
+                                });
+                            }
+                        }
+
+                        response.Insights = suggestions;
+                        response.VisualizationType = "None";
+                    }
+                    else
+                    {
+                        throw new TimeoutException("Recommendations retrieval timed out");
+                    }
                     break;
 
                 case "BatchJob":
                     // Get batch job related queries
-                    var batchQueries = _queryMonitorService.GetTopExpensiveQueriesAsync(20).GetAwaiter().GetResult();
-                    response.QueryResults = batchQueries.Where(q =>
-                        q.QueryText.ToUpperInvariant().Contains("BATCH") ||
-                        q.QueryText.ToUpperInvariant().Contains("JOB")).ToList();
-                    response.VisualizationType = "Table";
+                    var batchQueriesTask = _queryMonitorService.GetTopExpensiveQueriesAsync(20);
+                    if (await Task.WhenAny(batchQueriesTask, timeoutTask) == batchQueriesTask)
+                    {
+                        var batchQueries = await batchQueriesTask;
+                        response.QueryResults = batchQueries.Where(q =>
+                            q.QueryText.ToUpperInvariant().Contains("BATCH") ||
+                            q.QueryText.ToUpperInvariant().Contains("JOB")).ToList();
+                        response.VisualizationType = "Table";
+                    }
+                    else
+                    {
+                        throw new TimeoutException("Batch queries retrieval timed out");
+                    }
                     break;
 
                 default:
                     // For general queries, show top expensive queries
-                    var defaultQueries = _queryMonitorService.GetTopExpensiveQueriesAsync(5).GetAwaiter().GetResult();
-                    response.QueryResults = defaultQueries.ToList();
-                    response.VisualizationType = "Table";
+                    var defaultQueriesTask = _queryMonitorService.GetTopExpensiveQueriesAsync(5);
+                    if (await Task.WhenAny(defaultQueriesTask, timeoutTask) == defaultQueriesTask)
+                    {
+                        var defaultQueries = await defaultQueriesTask;
+                        response.QueryResults = defaultQueries.ToList();
+                        response.VisualizationType = "Table";
+                    }
+                    else
+                    {
+                        throw new TimeoutException("Default queries retrieval timed out");
+                    }
                     break;
             }
+        }
+        catch (TimeoutException)
+        {
+            _logger.LogWarning("Data enrichment timed out (5s), using sample data");
+            // Fallback to sample data if timeout
+            response.QueryResults = GenerateSampleQueries();
         }
         catch (Exception ex)
         {

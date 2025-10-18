@@ -241,6 +241,30 @@
                            BorderThickness="0"
                            Cursor="Hand"
                            Margin="10,0,0,0"/>
+
+                    <Button Content="📤 Export Profiles"
+                            Command="{Binding ExportProfilesAsyncCommand}"
+                            Background="#607D8B"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Width="170"
+                            Height="35"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="10,0,0,0"
+                            ToolTip="Export all profiles to Desktop as JSON"/>
+
+                    <Button Content="📥 Import Profiles"
+                            Command="{Binding ImportProfilesAsyncCommand}"
+                            Background="#455A64"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Width="170"
+                            Height="35"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="10,0,0,0"
+                            ToolTip="Import profiles from Desktop file AX2012Profiles_Import.json"/>
                 </WrapPanel>
 
                 <!-- AI Configuration Section -->

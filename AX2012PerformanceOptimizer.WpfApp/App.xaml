@@ -1,4 +1,4 @@
-﻿<Application x:Class="AX2012PerformanceOptimizer.WpfApp.App"
+<Application x:Class="AX2012PerformanceOptimizer.WpfApp.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:AX2012PerformanceOptimizer.WpfApp.Converters"
@@ -12,8 +12,10 @@
                     <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
                     <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
                     <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+                    <converters:NullToBoolConverter x:Key="NullToBoolConverter"/>
                     <converters:ProfileIsActiveConverter x:Key="ProfileIsActiveConverter"/>
                     <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter"/>
+                    <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
                 </ResourceDictionary>
                 
                 <!-- Modern WPF Styles -->

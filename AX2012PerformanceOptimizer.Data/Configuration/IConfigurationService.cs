@@ -13,6 +13,9 @@ public interface IConfigurationService
     string EncryptPassword(string password);
     string DecryptPassword(string encryptedPassword);
 
+    Task ExportProfilesAsync(string filePath);
+    Task ImportProfilesAsync(string filePath, bool merge = true);
+
     // AI Configuration
     Task<AiConfiguration?> GetAiConfigurationAsync();
     Task SaveAiConfigurationAsync(AiConfiguration configuration);

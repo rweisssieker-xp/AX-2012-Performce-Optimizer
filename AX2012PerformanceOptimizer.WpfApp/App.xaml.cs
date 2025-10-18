@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
@@ -26,6 +26,7 @@ public partial class App : Application
                 // Data Access
                 services.AddSingleton<ISqlConnectionManager, SqlConnectionManager>();
                 services.AddSingleton<IAxConnectorService, AxConnectorService>();
+                services.AddSingleton<ISqlExecutionPlanService, ExecutionPlanService>();
 
                 // Monitoring Services
                 services.AddSingleton<ISqlQueryMonitorService, SqlQueryMonitorService>();
@@ -38,6 +39,15 @@ public partial class App : Application
 
                 // Analysis
                 services.AddSingleton<IRecommendationEngine, RecommendationEngine>();
+                services.AddSingleton<ITrendingService, TrendingService>();
+                services.AddSingleton<IAlertService, AlertService>();
+
+                // 🚀 Innovative Features (Top 5 USPs)
+                services.AddSingleton<IPerformanceDNAService, PerformanceDNAService>();
+                services.AddSingleton<IPerformanceCrystalBallService, PerformanceCrystalBallService>();
+                services.AddSingleton<IPerformancePersonaService, PerformancePersonaService>();
+                services.AddSingleton<IPerformanceTimeMachineService, PerformanceTimeMachineService>();
+                services.AddSingleton<IPerformanceCommunityService, PerformanceCommunityService>();
 
                 // Historical Data
                 services.AddSingleton<IHistoricalDataService, HistoricalDataService>();
@@ -211,6 +221,13 @@ public partial class App : Application
                 services.AddTransient<NaturalLanguageAssistantViewModel>();
                 services.AddTransient<AiInsightsDashboardViewModel>();
                 services.AddTransient<AiHealthDashboardViewModel>();
+
+                // 🚀 INNOVATIVE USP FEATURES: ViewModels
+                services.AddTransient<PerformanceDnaViewModel>();
+                services.AddTransient<PerformanceCrystalBallViewModel>();
+                services.AddTransient<PerformancePersonasViewModel>();
+                services.AddTransient<PerformanceTimeMachineViewModel>();
+                services.AddTransient<PerformanceCommunityViewModel>();
 
                 // Server Settings ViewModel
                 services.AddTransient<ServerSettingsViewModel>();

@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using AX2012PerformanceOptimizer.Data.Models;
 using Microsoft.Data.SqlClient;
+using System.Linq;
 
 namespace AX2012PerformanceOptimizer.Data.Configuration;
 
@@ -86,6 +87,47 @@ public class ConfigurationService : IConfigurationService
             _profiles.Remove(profile);
             await SaveProfilesAsync();
         }
+    }
+
+    public async Task ExportProfilesAsync(string filePath)
+    {
+        var json = JsonSerializer.Serialize(_profiles, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        var dir = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrEmpty(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        await File.WriteAllTextAsync(filePath, json);
+    }
+
+    public async Task ImportProfilesAsync(string filePath, bool merge = true)
+    {
+        if (!File.Exists(filePath))
+        {
+            return;
+        }
+
+        var json = await File.ReadAllTextAsync(filePath);
+        var imported = JsonSerializer.Deserialize<List<ConnectionProfile>>(json) ?? new();
+
+        if (merge)
+        {
+            var dict = _profiles.ToDictionary(p => p.Id);
+            foreach (var p in imported)
+            {
+                dict[p.Id] = p;
+            }
+            _profiles = dict.Values.ToList();
+        }
+        else
+        {
+            _profiles = imported;
+        }
+
+        await SaveProfilesAsync();
     }
 
     public async Task<bool> TestConnectionAsync(ConnectionProfile profile)

@@ -29,6 +29,10 @@ dotnet publish AX2012PerformanceOptimizer.WpfApp/AX2012PerformanceOptimizer.WpfA
   /p:PublishSingleFile=true `
   /p:IncludeNativeLibrariesForSelfExtract=true `
   /p:EnableCompressionInSingleFile=true `
+  /p:PublishReadyToRun=true `
+  /p:ReadyToRunUseCrossgen2=true `
+  /p:PublishTrimmed=true `
+  /p:TrimMode=partial `
   /p:DebugType=None `
   /p:DebugSymbols=false
 

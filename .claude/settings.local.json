@@ -1,14 +1,15 @@
 {
   "permissions": {
     "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(Select-Object -First 100)",
+      "Bash(start AX2012PerformanceOptimizer.WpfApp.exe)",
+      "Bash(Select-String -Pattern \"(error|Build FAILED|Build succeeded)\")",
+      "Bash(Select-Object -First 20)",
       "Bash(taskkill:*)",
-      "Bash(Start-Sleep -Seconds 3)",
-      "Bash(Start-Process \"./AX2012PerformanceOptimizer.WpfApp.exe\")",
-      "Bash(./AX2012PerformanceOptimizer.WpfApp.exe)",
-      "Bash(Start-Sleep -Seconds 5)",
-      "Bash(explorer .)",
-      "Bash(Remove-Item -Recurse -Force \"C:\\tmp\\AX-2012-Performce-Optimizer\\AX2012PerformanceOptimizer.App\")",
-      "Bash(dotnet sln:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

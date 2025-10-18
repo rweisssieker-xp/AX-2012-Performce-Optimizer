@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text;
 using System.Windows;
 using AX2012PerformanceOptimizer.WpfApp.Dialogs;

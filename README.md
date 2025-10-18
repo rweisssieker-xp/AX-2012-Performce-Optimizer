@@ -2,6 +2,14 @@
 
 A native Windows application for monitoring and optimizing Microsoft Dynamics AX 2012 R3 CU13 performance with SQL Server 2016. This tool provides real-time performance metrics, graphical visualizations, and intelligent optimization recommendations.
 
+## 📚 Documentation
+
+- **[CORE_DOCUMENTATION.md](CORE_DOCUMENTATION.md)** - Complete core features, architecture, development setup, and deployment
+- **[AI_FEATURES.md](AI_FEATURES.md)** - All AI-powered features: Natural Language Assistant, Auto-Fixer, Query Rewriter, etc.
+- **[INNOVATIVE_FEATURES.md](INNOVATIVE_FEATURES.md)** - Unique USP features: Performance DNA, Crystal Ball, Personas, Time Machine, Community Benchmarking
+
+> **Quick Start**: New users should start with [CORE_DOCUMENTATION.md](CORE_DOCUMENTATION.md) for setup instructions.
+
 ## Features
 
 ### 🎯 Core Capabilities
@@ -12,6 +20,15 @@ A native Windows application for monitoring and optimizing Microsoft Dynamics AX
 - **Dual Connection**: Connects to both SQL Server (DMVs) and AX Business Connector
 - **Portable Application**: Single executable with no installation required
 - **Secure Credentials**: Encrypted password storage using Windows DPAPI
+ - **Demo Mode**: Immediate value without a DB connection (auto demo data on Dashboard)
+
+### 🌟 Why it's different (USPs)
+
+- **AX-native insights**: Uses AX tables like `SYSCLIENTSESSIONS`, `BATCHJOB`, `AIFGATEWAYQUEUE` for targeted diagnostics.
+- **Governed Auto-Fixer**: Two-step preview, safety levels, concrete “Why” and impact estimates, audit-ready `.sql` output.
+- **What-if predictions**: Before/after CPU, I/O, and duration with contributing factors and confidence.
+- **Cost-optimized AI**: Tiered model selection + response caching for up to 98–99% cost reduction.
+- **Zero-install, secure-by-default**: Portable EXE, DPAPI-encrypted secrets, read-only access, least privilege.
 
 ### 📊 Monitoring Modules
 
@@ -21,6 +38,7 @@ A native Windows application for monitoring and optimizing Microsoft Dynamics AX
 - Running batch jobs
 - Database size metrics
 - Critical alerts and warnings
+ - Demo data when disconnected
 
 #### 2. SQL Performance
 - Top expensive queries by CPU, I/O, and execution time
@@ -57,19 +75,19 @@ A native Windows application for monitoring and optimizing Microsoft Dynamics AX
 ## Technical Stack
 
 ### Architecture
-- **Framework**: .NET 8 with WinUI 3
+- **Framework**: .NET 8 WPF
 - **UI Pattern**: MVVM with CommunityToolkit.Mvvm
 - **Dependency Injection**: Microsoft.Extensions.DependencyInjection
 - **Data Access**: Microsoft.Data.SqlClient + AX Business Connector
-- **Charting**: LiveChartsCore for WinUI 3
+- **Charting**: LiveChartsCore.SkiaSharpView.WPF
 - **Configuration**: JSON-based with encrypted credentials
 
 ### Project Structure
 
 ```
 AX2012PerformanceOptimizer/
-├── AX2012PerformanceOptimizer.App/          # WinUI 3 Application Layer
-│   ├── Views/                                # XAML Views
+├── AX2012PerformanceOptimizer.WpfApp/       # WPF Application Layer
+│   ├── Views/                               # XAML Views
 │   ├── ViewModels/                          # MVVM ViewModels
 │   └── App.xaml.cs                          # DI Container Setup
 │
@@ -96,7 +114,7 @@ AX2012PerformanceOptimizer/
 │   └── Models/                              # Data Models
 │
 └── AX2012PerformanceOptimizer.Charts/       # Charting Components
-    └── LiveCharts Configuration
+    └── LiveCharts WPF Configuration
 ```
 
 ## Installation & Setup
@@ -112,7 +130,7 @@ AX2012PerformanceOptimizer/
 
 1. **Launch the Application**
    ```
-   AX2012PerformanceOptimizer.exe
+   AX2012PerformanceOptimizer.WpfApp.exe
    ```
 
 2. **Configure Connection Profile**
@@ -135,6 +153,7 @@ AX2012PerformanceOptimizer/
 4. **Connect**
    - Click "Connect" to activate the profile
    - Navigate to Dashboard to start monitoring
+   - If not connected, Dashboard shows demo data by default
 
 ## SQL Server DMVs Used
 
@@ -195,7 +214,7 @@ The recommendation engine analyzes performance data and generates suggestions in
 ### Requirements
 - Visual Studio 2022 (v17.8+) with:
   - .NET 8 SDK
-  - Windows App SDK
+  - Windows Desktop Development
   - C# 12
 - Or: .NET 8 SDK + Windows SDK 10.0.19041.0+
 
@@ -213,7 +232,7 @@ dotnet restore AX2012PerformanceOptimizer.sln
 dotnet build AX2012PerformanceOptimizer.sln --configuration Release
 
 # Publish as single-file executable
-dotnet publish AX2012PerformanceOptimizer.App/AX2012PerformanceOptimizer.App.csproj `
+dotnet publish AX2012PerformanceOptimizer.WpfApp/AX2012PerformanceOptimizer.WpfApp.csproj `
   --configuration Release `
   --runtime win-x64 `
   --self-contained true `
@@ -304,8 +323,8 @@ For issues, questions, or suggestions:
 
 ## Acknowledgments
 
-- Built with [WinUI 3](https://docs.microsoft.com/en-us/windows/apps/winui/winui3/)
-- Charts powered by [LiveCharts2](https://livecharts.dev/)
+- Built with **WPF (.NET 8)**
+- Charts powered by **LiveChartsCore.SkiaSharpView.WPF**
 - MVVM with [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 
 ## Disclaimer
@@ -317,3 +336,4 @@ This tool is provided as-is for monitoring purposes only. Always test in a non-p
 **Version**: 1.0.0  
 **Last Updated**: October 2025  
 **Target Platform**: Microsoft Dynamics AX 2012 R3 CU13 + SQL Server 2016
+
