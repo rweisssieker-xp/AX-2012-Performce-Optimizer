@@ -78,6 +78,23 @@
                 <views:AiHealthDashboardView/>
             </TabItem>
 
+            <TabItem Header="💬 NL to SQL">
+                <views:NaturalLanguageToSqlView/>
+            </TabItem>
+
+            <TabItem Header="🤖 Risk Scoring">
+                <views:QueryRiskScoringView/>
+            </TabItem>
+
+            <TabItem Header="📊 Executive Dashboard">
+                <views:ExecutiveDashboardView/>
+            </TabItem>
+
+            <!-- 🚀 PHASE 2 AI FEATURES -->
+            <TabItem Header="🩺 AI Therapist">
+                <views:PerformanceTherapistView/>
+            </TabItem>
+
             <!-- 🚀 INNOVATIVE USP FEATURES -->
             <TabItem Header="🧬 Performance DNA">
                 <views:PerformanceDnaView/>

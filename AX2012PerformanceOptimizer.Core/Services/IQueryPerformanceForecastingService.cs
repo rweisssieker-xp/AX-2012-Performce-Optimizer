@@ -18,7 +18,7 @@ public interface IQueryPerformanceForecastingService
     /// <summary>
     /// Detect performance anomalies and outliers
     /// </summary>
-    Task<AnomalyDetectionResult> DetectAnomaliesAsync(
+    Task<ForecastingAnomalyResult> DetectAnomaliesAsync(
         SqlQueryMetric query,
         List<HistoricalQuerySnapshot> history);
 
@@ -110,13 +110,13 @@ public class ForecastDataPoint
 }
 
 /// <summary>
-/// Anomaly detection result
+/// Anomaly detection result for forecasting
 /// </summary>
-public class AnomalyDetectionResult
+public class ForecastingAnomalyResult
 {
     public string QueryHash { get; set; } = string.Empty;
     public bool HasAnomalies { get; set; }
-    public List<PerformanceAnomaly> Anomalies { get; set; } = new();
+    public List<ForecastingAnomaly> Anomalies { get; set; } = new();
 
     // Statistical info
     public double Mean { get; set; }
@@ -128,9 +128,9 @@ public class AnomalyDetectionResult
 }
 
 /// <summary>
-/// Individual performance anomaly
+/// Individual performance anomaly for forecasting
 /// </summary>
-public class PerformanceAnomaly
+public class ForecastingAnomaly
 {
     public DateTime DetectedAt { get; set; }
     public string Type { get; set; } = string.Empty; // Spike, Drop, Drift

@@ -203,5 +203,42 @@ public class BatchJobMonitorService : IBatchJobMonitorService
         _monitoringCts?.Cancel();
         return _monitoringTask ?? Task.CompletedTask;
     }
+
+    public async Task<BatchJobMetric> GetBatchJobMetricsAsync()
+    {
+        var metric = new BatchJobMetric
+        {
+            CollectedAt = DateTime.UtcNow
+        };
+
+        try
+        {
+            var running = await GetRunningBatchJobsAsync();
+            var failed = await GetFailedBatchJobsAsync();
+
+            metric.TotalJobs = running.Count + failed.Count;
+            metric.Status = running.Any() ? BatchJobStatus.Running : BatchJobStatus.Completed;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting batch job metrics");
+        }
+
+        return metric;
+    }
+
+    public async Task<int> GetFailedBatchJobsCountAsync()
+    {
+        try
+        {
+            var failed = await GetFailedBatchJobsAsync();
+            return failed.Count;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting failed batch jobs count");
+            return 0;
+        }
+    }
 }
 

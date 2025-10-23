@@ -206,6 +206,91 @@ public partial class App : Application
                 // NEW: Dialog Service for modern popups
                 services.AddSingleton<Services.IDialogService, Services.DialogService>();
 
+                // NEW: Natural Language to SQL Generator (Phase 1 AI Feature)
+                services.AddSingleton<AX2012PerformanceOptimizer.Core.Services.NaturalLanguageToSql.INaturalLanguageToSqlService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AX2012PerformanceOptimizer.Core.Services.NaturalLanguageToSql.NaturalLanguageToSqlService>>();
+                    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                    var httpClient = httpClientFactory.CreateClient("AI");
+                    var nlToSqlService = new AX2012PerformanceOptimizer.Core.Services.NaturalLanguageToSql.NaturalLanguageToSqlService(logger, httpClient);
+
+                    // Load configuration and configure the service
+                    var configService = sp.GetRequiredService<IConfigurationService>();
+                    var aiConfig = configService.GetAiConfigurationAsync().Result;
+                    if (aiConfig != null && aiConfig.IsEnabled && !string.IsNullOrEmpty(aiConfig.EncryptedApiKey))
+                    {
+                        var apiKey = configService.DecryptPassword(aiConfig.EncryptedApiKey);
+                        nlToSqlService.Configure(
+                            apiKey,
+                            aiConfig.Endpoint,
+                            aiConfig.Model,
+                            aiConfig.Provider == Data.Models.AiProvider.AzureOpenAI);
+                    }
+
+                    return nlToSqlService;
+                });
+
+                // NEW: Query Risk Scoring with ML (Phase 1 AI Feature)
+                services.AddSingleton<AX2012PerformanceOptimizer.Core.Services.QueryRiskScoring.IQueryRiskScoringService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AX2012PerformanceOptimizer.Core.Services.QueryRiskScoring.QueryRiskScoringService>>();
+                    return new AX2012PerformanceOptimizer.Core.Services.QueryRiskScoring.QueryRiskScoringService(logger);
+                });
+
+                // NEW: Executive Dashboard Generator (Phase 1 AI Feature)
+                services.AddSingleton<AX2012PerformanceOptimizer.Core.Services.ExecutiveDashboard.IExecutiveDashboardGeneratorService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AX2012PerformanceOptimizer.Core.Services.ExecutiveDashboard.ExecutiveDashboardGeneratorService>>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    var historicalData = sp.GetRequiredService<IHistoricalDataService>();
+                    return new AX2012PerformanceOptimizer.Core.Services.ExecutiveDashboard.ExecutiveDashboardGeneratorService(logger, queryMonitor, databaseStats, historicalData);
+                });
+
+                // PHASE 2 AI FEATURES: Performance Therapist (interactive diagnosis)
+                services.AddSingleton<AX2012PerformanceOptimizer.Core.Services.PerformanceTherapist.IPerformanceTherapistService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AX2012PerformanceOptimizer.Core.Services.PerformanceTherapist.PerformanceTherapistService>>();
+                    var aiService = sp.GetRequiredService<IAiQueryOptimizerService>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    var historicalData = sp.GetRequiredService<IHistoricalDataService>();
+                    return new AX2012PerformanceOptimizer.Core.Services.PerformanceTherapist.PerformanceTherapistService(logger, aiService, queryMonitor, databaseStats, historicalData);
+                });
+
+                // PHASE 1 QUICK WINS: Executive Performance Scorecard
+                services.AddSingleton<AX2012PerformanceOptimizer.Core.Services.ExecutiveDashboard.IExecutiveScorecardService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<AX2012PerformanceOptimizer.Core.Services.ExecutiveDashboard.ExecutiveScorecardService>>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var aosMonitor = sp.GetRequiredService<IAosMonitorService>();
+                    var batchJobMonitor = sp.GetRequiredService<IBatchJobMonitorService>();
+                    var healthScore = sp.GetRequiredService<ISystemHealthScoreService>();
+                    return new AX2012PerformanceOptimizer.Core.Services.ExecutiveDashboard.ExecutiveScorecardService(databaseStats, queryMonitor, aosMonitor, batchJobMonitor, healthScore, logger);
+                });
+
+                // PHASE 1 QUICK WINS: Performance Anomaly Detection
+                services.AddSingleton<IPerformanceAnomalyDetectionService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<PerformanceAnomalyDetectionService>>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    var aosMonitor = sp.GetRequiredService<IAosMonitorService>();
+                    return new PerformanceAnomalyDetectionService(queryMonitor, databaseStats, aosMonitor, logger);
+                });
+
+                // PHASE 1 QUICK WINS: Performance Health Scorecard
+                services.AddSingleton<IPerformanceHealthScorecardService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<PerformanceHealthScorecardService>>();
+                    var queryMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    var aosMonitor = sp.GetRequiredService<IAosMonitorService>();
+                    var batchJobMonitor = sp.GetRequiredService<IBatchJobMonitorService>();
+                    return new PerformanceHealthScorecardService(queryMonitor, databaseStats, aosMonitor, batchJobMonitor, logger);
+                });
+
                 // ViewModels
                 services.AddTransient<MainViewModel>();
                 services.AddTransient<DashboardViewModel>();
@@ -221,6 +306,15 @@ public partial class App : Application
                 services.AddTransient<NaturalLanguageAssistantViewModel>();
                 services.AddTransient<AiInsightsDashboardViewModel>();
                 services.AddTransient<AiHealthDashboardViewModel>();
+                services.AddTransient<NaturalLanguageToSqlViewModel>();
+                services.AddTransient<QueryRiskScoringViewModel>();
+                services.AddTransient<ExecutiveDashboardViewModel>();
+
+                // PHASE 2 AI FEATURES: ViewModels
+                services.AddTransient<PerformanceTherapistViewModel>();
+
+                // PHASE 1 QUICK WINS: ViewModels
+                services.AddTransient<ExecutiveScorecardViewModel>();
 
                 // 🚀 INNOVATIVE USP FEATURES: ViewModels
                 services.AddTransient<PerformanceDnaViewModel>();

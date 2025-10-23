@@ -17,9 +17,11 @@ public interface ISqlConnectionManager
     Task<bool> IsConnectedAsync();
     void SetConnectionString(string connectionString);
     string GetConnectionString();
+    void SetAosServerName(string aosServerName);
 
     bool IsConnected { get; }
     string CurrentServerName { get; }
     string CurrentDatabaseName { get; }
+    string CurrentAosServerName { get; }
 }
 

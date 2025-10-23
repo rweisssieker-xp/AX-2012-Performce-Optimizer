@@ -1,0 +1,285 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.ExecutiveScorecardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1200">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2C3E50" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="📊 Executive Performance Scorecard"
+                               FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Board-Ready Performance Reports &amp; KPI Tracking"
+                               FontSize="14" Foreground="#BDC3C7" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="🔄 Generate Scorecard"
+                            Command="{Binding GenerateScorecardCommand}"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                            Margin="0,0,10,0" Padding="15,8"/>
+                    <Button Content="📅 Monthly Review"
+                            Command="{Binding GenerateMonthlyReviewCommand}"
+                            IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                            Margin="0,0,10,0" Padding="15,8"/>
+                    <Button Content="📄 Export PDF"
+                            Command="{Binding ExportToPdfCommand}"
+                            IsEnabled="{Binding HasScorecard}"
+                            Margin="0,0,10,0" Padding="15,8"/>
+                    <Button Content="📊 Export PPT"
+                            Command="{Binding ExportToPowerPointCommand}"
+                            IsEnabled="{Binding HasScorecard}"
+                            Padding="15,8"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+                <!-- Status Message -->
+                <Border Background="#ECF0F1" Padding="15" CornerRadius="5" Margin="0,0,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="ℹ️ " FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding StatusMessage}"
+                                   FontSize="14" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </Grid>
+                </Border>
+
+                <!-- Loading Indicator -->
+                <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,20"
+                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- Scorecard Content -->
+                <Grid Visibility="{Binding HasScorecard, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Overall Score Card -->
+                    <Border Grid.Row="0" Background="White" BorderBrush="#BDC3C7" BorderThickness="1"
+                            CornerRadius="8" Padding="30" Margin="0,0,0,20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="3*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Score Circle -->
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding OverallScore}" FontSize="72" FontWeight="Bold"
+                                           HorizontalAlignment="Center" Foreground="#2C3E50"/>
+                                <TextBlock Text="/100" FontSize="24" HorizontalAlignment="Center"
+                                           Foreground="#7F8C8D" Margin="0,-10,0,0"/>
+                                <TextBlock Text="{Binding GradeDisplay, StringFormat='Grade: {0}'}"
+                                           FontSize="32" FontWeight="Bold" HorizontalAlignment="Center"
+                                           Foreground="#3498DB" Margin="0,10,0,0"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+                                    <TextBlock Text="{Binding TrendIcon}" FontSize="20" Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding TrendDisplay}" FontSize="16" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding TrendChangePoints, StringFormat=' ({0:+0;-0}pts)'}"
+                                               FontSize="14" Margin="5,0,0,0" Foreground="#7F8C8D"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Business Metrics -->
+                            <Grid Grid.Column="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Business Impact" FontSize="20" FontWeight="Bold"
+                                           Margin="0,0,0,15"/>
+
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Row 1 -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,15">
+                                        <TextBlock Text="💰 Monthly Savings" FontSize="12" Foreground="#7F8C8D"/>
+                                        <TextBlock Text="{Binding MonthlySavings}" FontSize="24" FontWeight="Bold"
+                                                   Foreground="#27AE60"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,15">
+                                        <TextBlock Text="📈 Annual Projected" FontSize="12" Foreground="#7F8C8D"/>
+                                        <TextBlock Text="{Binding AnnualProjected}" FontSize="24" FontWeight="Bold"
+                                                   Foreground="#27AE60"/>
+                                    </StackPanel>
+
+                                    <!-- Row 2 -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,15">
+                                        <TextBlock Text="✅ Optimizations Done" FontSize="12" Foreground="#7F8C8D"/>
+                                        <TextBlock Text="{Binding OptimizationsCount}" FontSize="24" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,15">
+                                        <TextBlock Text="🛡️ Issues Prevented" FontSize="12" Foreground="#7F8C8D"/>
+                                        <TextBlock Text="{Binding IssuesPreventedCount}" FontSize="24" FontWeight="Bold"/>
+                                    </StackPanel>
+
+                                    <!-- Row 3 -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="⚡ Avg Response Time" FontSize="12" Foreground="#7F8C8D"/>
+                                        <TextBlock Text="{Binding AvgResponseTime}" FontSize="24" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="10,0,0,0">
+                                        <TextBlock Text="📊 SLA Compliance" FontSize="12" Foreground="#7F8C8D"/>
+                                        <TextBlock Text="{Binding SlaCompliance}" FontSize="24" FontWeight="Bold"
+                                                   Foreground="#3498DB"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Category Scores -->
+                    <Border Grid.Row="1" Background="White" BorderBrush="#BDC3C7" BorderThickness="1"
+                            CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Category Breakdown" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                            <ItemsControl ItemsSource="{Binding CategoryScores}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="50"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="14"
+                                                           VerticalAlignment="Center"/>
+                                                <ProgressBar Grid.Column="1" Value="{Binding Score}" Maximum="100"
+                                                             Height="20" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Score, StringFormat='{}{0}/100'}"
+                                                           FontSize="14" FontWeight="SemiBold"
+                                                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                           Margin="10,0,0,0"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Critical Issues & Achievements -->
+                    <Grid Grid.Row="2" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Critical Issues -->
+                        <Border Grid.Column="0" Background="White" BorderBrush="#BDC3C7" BorderThickness="1"
+                                CornerRadius="8" Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="⚠️ Critical Issues" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                                <ItemsControl ItemsSource="{Binding CriticalIssues}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                                       Foreground="#E74C3C"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No critical issues" Foreground="#27AE60" FontStyle="Italic"
+                                           Visibility="{Binding CriticalIssues.Count, Converter={StaticResource CountToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Top Achievements -->
+                        <Border Grid.Column="2" Background="White" BorderBrush="#BDC3C7" BorderThickness="1"
+                                CornerRadius="8" Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="🏆 Top Achievements" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+                                <ItemsControl ItemsSource="{Binding TopAchievements}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                                       Foreground="#27AE60"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Monthly Review Section -->
+                    <Border Grid.Row="3" Background="White" BorderBrush="#BDC3C7" BorderThickness="1"
+                            CornerRadius="8" Padding="20"
+                            Visibility="{Binding ShowMonthlyReview, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding ReviewMonth, StringFormat='📅 Monthly Business Review - {0}'}"
+                                       FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Executive Summary" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding ExecutiveSummary}" TextWrapping="Wrap" Margin="0,0,0,20"/>
+
+                            <TextBlock Text="Key Highlights" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <ItemsControl ItemsSource="{Binding KeyHighlights}" Margin="0,0,0,20">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                            <TextBlock Text="•" Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="Action Items" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <ItemsControl ItemsSource="{Binding ActionItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                            <TextBlock Text="□" Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="#ECF0F1" Padding="15">
+            <TextBlock Text="💡 Tip: Export to PowerPoint for board presentations. Monthly reviews provide detailed analysis for management."
+                       FontSize="12" Foreground="#7F8C8D" TextWrapping="Wrap"/>
+        </Border>
+    </Grid>
+</UserControl>

@@ -15,6 +15,7 @@ public class BatchJobMetric
     public int ExecutionCount { get; set; }
     public double AvgDurationMinutes { get; set; }
     public DateTime CollectedAt { get; set; } = DateTime.UtcNow;
+    public int TotalJobs { get; set; }
 
     // Additional properties for Smart Batching Advisor
     public double AvgDuration => AvgDurationMinutes * 60.0; // Convert minutes to seconds
@@ -34,6 +35,8 @@ public enum BatchJobStatus
     Ready = 4,
     Canceling = 5,
     Canceled = 6,
-    Withhold = 7
+    Withhold = 7,
+    Running = 1,     // Alias for Executing
+    Completed = 3    // Alias for Finished
 }
 

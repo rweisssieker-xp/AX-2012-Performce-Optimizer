@@ -16,6 +16,8 @@
                     <converters:ProfileIsActiveConverter x:Key="ProfileIsActiveConverter"/>
                     <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter"/>
                     <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+                    <converters:BoolToYesNoConverter x:Key="BoolToYesNoConverter"/>
+                    <converters:BoolToActiveInactiveConverter x:Key="BoolToActiveInactiveConverter"/>
                 </ResourceDictionary>
                 
                 <!-- Modern WPF Styles -->

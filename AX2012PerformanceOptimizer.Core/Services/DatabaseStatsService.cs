@@ -119,7 +119,7 @@ public class DatabaseStatsService : IDatabaseStatsService
                 FROM sys.dm_db_index_physical_stats(DB_ID(), NULL, NULL, NULL, 'LIMITED') ips
                 INNER JOIN sys.indexes i ON ips.object_id = i.object_id AND ips.index_id = i.index_id
                 WHERE ips.avg_fragmentation_in_percent > @Threshold
-                    AND ips.page_count > 1000
+                    AND ips.page_count > 100
                     AND i.name IS NOT NULL
                 ORDER BY ips.avg_fragmentation_in_percent DESC", connection);
 

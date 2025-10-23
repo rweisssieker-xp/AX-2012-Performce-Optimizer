@@ -24,35 +24,51 @@ public class AosMonitorService : IAosMonitorService
 
     public async Task<AosMetric> GetAosMetricsAsync()
     {
+        var aosServerName = _connectionManager.CurrentAosServerName;
+        if (string.IsNullOrEmpty(aosServerName))
+        {
+            aosServerName = Environment.MachineName;
+        }
+
         var metric = new AosMetric
         {
-            ServerName = Environment.MachineName,
+            ServerName = aosServerName,
             CollectedAt = DateTime.UtcNow
         };
 
         try
         {
             using var connection = await _connectionManager.GetConnectionAsync();
-            
+
             // Get active user sessions count
             using var sessionCmd = new SqlCommand(@"
                 SELECT COUNT(*) FROM SYSCLIENTSESSIONS WHERE STATUS = 1", connection);
-            metric.ActiveUserSessions = (int)await sessionCmd.ExecuteScalarAsync();
+            var sessionResult = await sessionCmd.ExecuteScalarAsync();
+            metric.ActiveUserSessions = sessionResult != null ? Convert.ToInt32(sessionResult) : 0;
 
             // Get SQL Server performance metrics as AOS proxy
             using var perfCmd = new SqlCommand(@"
-                SELECT 
-                    cntr_value 
-                FROM sys.dm_os_performance_counters 
+                SELECT
+                    cntr_value
+                FROM sys.dm_os_performance_counters
                 WHERE counter_name = 'SQL Compilations/sec'", connection);
-            
+
             var result = await perfCmd.ExecuteScalarAsync();
             metric.IsHealthy = result != null;
+
+            _logger.LogInformation("AOS Metrics collected successfully. Active Sessions: {Count}", metric.ActiveUserSessions);
+        }
+        catch (SqlException sqlEx)
+        {
+            _logger.LogError(sqlEx, "SQL Error getting AOS metrics. Check database connection and table permissions.");
+            metric.IsHealthy = false;
+            metric.ActiveUserSessions = 0;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting AOS metrics");
             metric.IsHealthy = false;
+            metric.ActiveUserSessions = 0;
         }
 
         return metric;
@@ -66,30 +82,44 @@ public class AosMonitorService : IAosMonitorService
         {
             using var connection = await _connectionManager.GetConnectionAsync();
             using var command = new SqlCommand(@"
-                SELECT 
+                SELECT
                     SESSIONID,
                     USERID,
                     CLIENTCOMPUTER,
                     LOGONDATETIME,
                     CLIENTTYPE,
                     STATUS
-                FROM SYSCLIENTSESSIONS 
+                FROM SYSCLIENTSESSIONS
                 WHERE STATUS = 1
                 ORDER BY LOGONDATETIME DESC", connection);
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                sessions.Add(new UserSession
+                try
                 {
-                    SessionId = reader.GetString(0),
-                    UserId = reader.GetString(1),
-                    ClientComputer = reader.GetString(2),
-                    LoginDateTime = reader.GetDateTime(3),
-                    Company = string.Empty,
-                    IsActive = reader.GetInt32(5) == 1
-                });
+                    sessions.Add(new UserSession
+                    {
+                        SessionId = !reader.IsDBNull(0) ? reader.GetString(0) : string.Empty,
+                        UserId = !reader.IsDBNull(1) ? reader.GetString(1) : string.Empty,
+                        ClientComputer = !reader.IsDBNull(2) ? reader.GetString(2) : string.Empty,
+                        LoginDateTime = !reader.IsDBNull(3) ? reader.GetDateTime(3) : DateTime.MinValue,
+                        Company = string.Empty,
+                        IsActive = !reader.IsDBNull(5) && reader.GetInt32(5) == 1
+                    });
+                }
+                catch (Exception rowEx)
+                {
+                    _logger.LogWarning(rowEx, "Error reading session row, skipping");
+                    continue;
+                }
             }
+
+            _logger.LogInformation("Retrieved {Count} active user sessions", sessions.Count);
+        }
+        catch (SqlException sqlEx)
+        {
+            _logger.LogError(sqlEx, "SQL Error getting active user sessions. Check if SYSCLIENTSESSIONS table exists and has correct permissions.");
         }
         catch (Exception ex)
         {

@@ -1,0 +1,441 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.QueryRiskScoringView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="900" d:DesignWidth="1600">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="🤖 ML-Based Query Risk Scoring" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Analyze SQL queries using machine learning to predict performance and security risks"
+                      FontSize="14" Foreground="Gray" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Main Content Area -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,10,0">
+                <StackPanel>
+                    <!-- SQL Query Input -->
+                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="SQL Query to Analyze" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBox Text="{Binding SqlQuery, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" AcceptsReturn="True" Height="150"
+                                    FontFamily="Consolas" FontSize="12"
+                                    BorderBrush="#2196F3" BorderThickness="2"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button Content="🔍 Analyze Risk" Command="{Binding AnalyzeRiskCommand}"
+                                       Background="#4CAF50" Foreground="White" FontWeight="Bold"
+                                       Width="150" Height="35" Margin="0,0,10,0" BorderThickness="0"/>
+                                <Button Content="📋 Copy" Command="{Binding CopyToClipboardCommand}"
+                                       Width="80" Height="35" Margin="0,0,10,0"/>
+                                <Button Content="💾 Save Report" Command="{Binding SaveReportCommand}"
+                                       Width="120" Height="35" Margin="0,0,10,0"/>
+                                <Button Content="🗑️ Clear" Command="{Binding ClearCommand}"
+                                       Width="80" Height="35"/>
+                            </StackPanel>
+
+                            <TextBlock Text="{Binding StatusMessage}" Margin="0,10,0,0"
+                                      FontStyle="Italic" Foreground="#666"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Risk Score Display -->
+                    <Border Background="{Binding RiskLevelColor}" BorderThickness="0" Padding="20" Margin="0,0,0,15"
+                           Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="{Binding RiskLevelIcon}" FontSize="48"
+                                      VerticalAlignment="Center" Margin="0,0,20,0"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="RISK ASSESSMENT RESULT" FontSize="14" Foreground="White" Opacity="0.9"/>
+                                <TextBlock Text="{Binding RiskLevel}" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock FontSize="14" Foreground="White" Opacity="0.9">
+                                    <Run Text="Score: "/>
+                                    <Run Text="{Binding OverallRiskScore, StringFormat='{}{0:F1}/100'}" FontWeight="Bold"/>
+                                    <Run Text=" | Confidence: "/>
+                                    <Run Text="{Binding MlConfidence, StringFormat='{}{0:F0}%'}" FontWeight="Bold"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding ShouldExecute, Converter={StaticResource BoolToYesNoConverter}}"
+                                          FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Right"/>
+                                <TextBlock Text="Should Execute" FontSize="12" Foreground="White" Opacity="0.9"
+                                          HorizontalAlignment="Right"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Risk Breakdown -->
+                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="📊 Risk Breakdown" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Performance Risk -->
+                                <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                                    <TextBlock Text="⚡ Performance Risk" FontWeight="SemiBold"/>
+                                    <Grid Margin="0,5,0,0">
+                                        <ProgressBar Value="{Binding PerformanceRisk}" Maximum="100" Height="20"
+                                                    Foreground="#FF9800"/>
+                                        <TextBlock Text="{Binding PerformanceRisk, StringFormat='{}{0:F1}/100'}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  FontWeight="Bold" Foreground="White"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Security Risk -->
+                                <StackPanel Grid.Row="1" Margin="0,0,0,10">
+                                    <TextBlock Text="🔒 Security Risk" FontWeight="SemiBold"/>
+                                    <Grid Margin="0,5,0,0">
+                                        <ProgressBar Value="{Binding SecurityRisk}" Maximum="100" Height="20"
+                                                    Foreground="#F44336"/>
+                                        <TextBlock Text="{Binding SecurityRisk, StringFormat='{}{0:F1}/100'}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  FontWeight="Bold" Foreground="White"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Complexity Risk -->
+                                <StackPanel Grid.Row="2" Margin="0,0,0,10">
+                                    <TextBlock Text="🧩 Complexity Risk" FontWeight="SemiBold"/>
+                                    <Grid Margin="0,5,0,0">
+                                        <ProgressBar Value="{Binding ComplexityRisk}" Maximum="100" Height="20"
+                                                    Foreground="#9C27B0"/>
+                                        <TextBlock Text="{Binding ComplexityRisk, StringFormat='{}{0:F1}/100'}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  FontWeight="Bold" Foreground="White"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Resource Risk -->
+                                <StackPanel Grid.Row="3" Margin="0,0,0,10">
+                                    <TextBlock Text="💻 Resource Risk" FontWeight="SemiBold"/>
+                                    <Grid Margin="0,5,0,0">
+                                        <ProgressBar Value="{Binding ResourceRisk}" Maximum="100" Height="20"
+                                                    Foreground="#FF5722"/>
+                                        <TextBlock Text="{Binding ResourceRisk, StringFormat='{}{0:F1}/100'}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  FontWeight="Bold" Foreground="White"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Data Integrity Risk -->
+                                <StackPanel Grid.Row="4">
+                                    <TextBlock Text="🛡️ Data Integrity Risk" FontWeight="SemiBold"/>
+                                    <Grid Margin="0,5,0,0">
+                                        <ProgressBar Value="{Binding DataIntegrityRisk}" Maximum="100" Height="20"
+                                                    Foreground="#E91E63"/>
+                                        <TextBlock Text="{Binding DataIntegrityRisk, StringFormat='{}{0:F1}/100'}"
+                                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  FontWeight="Bold" Foreground="White"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Estimated Impact -->
+                    <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="2" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <TextBlock Text="⏱️" FontSize="24" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Estimated Time" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding EstimatedExecutionTimeMs, StringFormat='{}{0:F0}ms'}"
+                                          FontSize="18" Foreground="#2196F3" HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <TextBlock Text="🔥" FontSize="24" HorizontalAlignment="Center"/>
+                                <TextBlock Text="CPU Usage" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding EstimatedCpuUsagePercent, StringFormat='{}{0:F1}%'}"
+                                          FontSize="18" Foreground="#FF9800" HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                <TextBlock Text="💾" FontSize="24" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Memory Usage" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding EstimatedMemoryUsageMb, StringFormat='{}{0:F1}MB'}"
+                                          FontSize="18" Foreground="#9C27B0" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Risk Factors -->
+                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding RiskFactors.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="🎯 Risk Factors" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <DataGrid ItemsSource="{Binding RiskFactors}" AutoGenerateColumns="False"
+                                     IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="None"
+                                     Background="Transparent" BorderThickness="0">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Factor" Binding="{Binding FactorName}" Width="*"/>
+                                    <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="100"/>
+                                    <DataGridTextColumn Header="Score" Binding="{Binding Score, StringFormat='{}{0:F1}'}" Width="60"/>
+                                    <DataGridTextColumn Header="Weight" Binding="{Binding Weight, StringFormat='{}{0:F2}'}" Width="60"/>
+                                    <DataGridTextColumn Header="Impact" Binding="{Binding ImpactLevel}" Width="80"/>
+                                    <DataGridTextColumn Header="Recommendation" Binding="{Binding Recommendation}" Width="2*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Recommendations -->
+                    <Border Background="#E8F5E9" BorderBrush="#4CAF50" BorderThickness="2" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding Recommendations.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="💡 Recommendations" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <ListBox ItemsSource="{Binding Recommendations}" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Warnings -->
+                    <Border Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="2" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding Warnings.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="⚠️ Warnings" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <ListBox ItemsSource="{Binding Warnings}" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" Foreground="#E65100"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Violated Best Practices -->
+                    <Border Background="#FFEBEE" BorderBrush="#F44336" BorderThickness="2" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding ViolatedBestPractices.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="❌ Violated Best Practices" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <ListBox ItemsSource="{Binding ViolatedBestPractices}" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" Foreground="#C62828"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Anti-Patterns -->
+                    <Border Background="#F3E5F5" BorderBrush="#9C27B0" BorderThickness="2" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding AntiPatterns.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="🚫 Detected Anti-Patterns" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <ListBox ItemsSource="{Binding AntiPatterns}" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" Foreground="#6A1B9A"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Tables Involved -->
+                    <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding TablesInvolved.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="🗃️ Tables Involved" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <ItemsControl ItemsSource="{Binding TablesInvolved}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1"
+                                               Padding="8,4" Margin="0,0,5,5" CornerRadius="3">
+                                            <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Missing Indexes -->
+                    <Border Background="#FFF9C4" BorderBrush="#FBC02D" BorderThickness="2" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding MissingIndexes.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="📑 Missing Indexes" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <ListBox ItemsSource="{Binding MissingIndexes}" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" Foreground="#F57F17"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Suggested Rewrites -->
+                    <Border Background="#E0F7FA" BorderBrush="#00BCD4" BorderThickness="2" Padding="15" Margin="0,0,0,15"
+                           Visibility="{Binding SuggestedRewrites.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                        <StackPanel>
+                            <TextBlock Text="🔄 Suggested Query Rewrites" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <ListBox ItemsSource="{Binding SuggestedRewrites}" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" Foreground="#006064"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Right: Examples & Info -->
+            <StackPanel Grid.Column="1">
+                <!-- Example Queries -->
+                <Border Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="2" Padding="15" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="💡 Example Queries" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+                        <TextBlock Text="Click to analyze risk:" FontSize="11" Foreground="#666" Margin="0,0,0,5"/>
+                        <ListBox ItemsSource="{Binding ExampleQueries}" MaxHeight="400"
+                                BorderThickness="0" Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding DataContext.UseExampleCommand,
+                                           RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                           CommandParameter="{Binding}"
+                                           HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                           Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                           Padding="5" Margin="0,2">
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap"
+                                                  FontFamily="Consolas" FontSize="10"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- Risk Level Guide -->
+                <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" Padding="15" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="📘 Risk Level Guide" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+
+                        <StackPanel Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="✅" FontSize="16" Margin="0,0,5,0"/>
+                                <TextBlock Text="Low (0-25)" FontWeight="Bold" Foreground="#4CAF50"/>
+                            </StackPanel>
+                            <TextBlock Text="Safe to execute" FontSize="11" Foreground="#666" Margin="20,0,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚠️" FontSize="16" Margin="0,0,5,0"/>
+                                <TextBlock Text="Medium (26-50)" FontWeight="Bold" Foreground="#FF9800"/>
+                            </StackPanel>
+                            <TextBlock Text="Review recommended" FontSize="11" Foreground="#666" Margin="20,0,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔴" FontSize="16" Margin="0,0,5,0"/>
+                                <TextBlock Text="High (51-75)" FontWeight="Bold" Foreground="#F44336"/>
+                            </StackPanel>
+                            <TextBlock Text="Proceed with caution" FontSize="11" Foreground="#666" Margin="20,0,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🚨" FontSize="16" Margin="0,0,5,0"/>
+                                <TextBlock Text="Critical (76-100)" FontWeight="Bold" Foreground="#9C27B0"/>
+                            </StackPanel>
+                            <TextBlock Text="Should not execute" FontSize="11" Foreground="#666" Margin="20,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- ML Info -->
+                <Border Background="#E8EAF6" BorderBrush="#3F51B5" BorderThickness="2" Padding="15"
+                       Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="🤖 ML Assessment Info" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="ML Confidence: " FontSize="11"/>
+                            <TextBlock Text="{Binding MlConfidence, StringFormat='{}{0:F1}%'}"
+                                      FontWeight="Bold" FontSize="11" Foreground="#3F51B5"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="Assessment Time: " FontSize="11"/>
+                            <TextBlock Text="{Binding AssessmentTimeMs, StringFormat='{}{0:F0}ms'}"
+                                      FontWeight="Bold" FontSize="11" Foreground="#3F51B5"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="ML Model: " FontSize="11"/>
+                            <TextBlock Text="{Binding UsedMachineLearning, Converter={StaticResource BoolToActiveInactiveConverter}}"
+                                      FontWeight="Bold" FontSize="11" Foreground="#3F51B5"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Loading Overlay -->
+        <Grid Grid.Row="0" Grid.RowSpan="2" Background="#80000000"
+             Visibility="{Binding IsAnalyzing, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Background="White" CornerRadius="10" Padding="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="🤖 ML Analysis in Progress..." FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Analyzing query risk factors..." FontSize="14" Foreground="Gray" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

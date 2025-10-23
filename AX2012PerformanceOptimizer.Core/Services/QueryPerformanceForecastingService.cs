@@ -134,7 +134,7 @@ public class QueryPerformanceForecastingService : IQueryPerformanceForecastingSe
         return forecast;
     }
 
-    public async Task<AnomalyDetectionResult> DetectAnomaliesAsync(
+    public async Task<ForecastingAnomalyResult> DetectAnomaliesAsync(
         SqlQueryMetric query,
         List<HistoricalQuerySnapshot> history)
     {
@@ -142,7 +142,7 @@ public class QueryPerformanceForecastingService : IQueryPerformanceForecastingSe
 
         await Task.CompletedTask;
 
-        var result = new AnomalyDetectionResult
+        var result = new ForecastingAnomalyResult
         {
             QueryHash = query.QueryHash
         };
@@ -167,7 +167,7 @@ public class QueryPerformanceForecastingService : IQueryPerformanceForecastingSe
         {
             if (snapshot.AvgElapsedTimeMs > result.UpperThreshold)
             {
-                var anomaly = new PerformanceAnomaly
+                var anomaly = new ForecastingAnomaly
                 {
                     DetectedAt = snapshot.Timestamp,
                     Type = "Spike",
@@ -182,7 +182,7 @@ public class QueryPerformanceForecastingService : IQueryPerformanceForecastingSe
             }
             else if (snapshot.AvgElapsedTimeMs < result.LowerThreshold && result.LowerThreshold > 0)
             {
-                var anomaly = new PerformanceAnomaly
+                var anomaly = new ForecastingAnomaly
                 {
                     DetectedAt = snapshot.Timestamp,
                     Type = "Drop",
@@ -203,7 +203,7 @@ public class QueryPerformanceForecastingService : IQueryPerformanceForecastingSe
 
         if (recentAvg > oldAvg * 1.5)
         {
-            var anomaly = new PerformanceAnomaly
+            var anomaly = new ForecastingAnomaly
             {
                 DetectedAt = DateTime.Now,
                 Type = "Drift",

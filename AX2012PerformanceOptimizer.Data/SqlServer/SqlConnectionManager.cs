@@ -8,6 +8,7 @@ public class SqlConnectionManager : ISqlConnectionManager
     private string _connectionString = string.Empty;
     private string _currentServerName = string.Empty;
     private string _currentDatabaseName = string.Empty;
+    private string _currentAosServerName = string.Empty;
     private bool _isConnected = false;
 
     public event EventHandler<ConnectionChangedEventArgs>? ConnectionChanged;
@@ -41,6 +42,17 @@ public class SqlConnectionManager : ISqlConnectionManager
             lock (_lock)
             {
                 return _currentDatabaseName;
+            }
+        }
+    }
+
+    public string CurrentAosServerName
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _currentAosServerName;
             }
         }
     }
@@ -85,6 +97,14 @@ public class SqlConnectionManager : ISqlConnectionManager
         lock (_lock)
         {
             return _connectionString;
+        }
+    }
+
+    public void SetAosServerName(string aosServerName)
+    {
+        lock (_lock)
+        {
+            _currentAosServerName = aosServerName ?? string.Empty;
         }
     }
 

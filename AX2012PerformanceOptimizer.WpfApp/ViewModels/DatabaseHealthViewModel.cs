@@ -74,10 +74,12 @@ public partial class DatabaseHealthViewModel : ObservableObject
     private async Task LoadDataAsync()
     {
         IsLoading = true;
+        StatusMessage = "Loading database health metrics...";
 
         try
         {
             CurrentMetrics = await _databaseStats.GetDatabaseMetricsAsync();
+            StatusMessage = "Loading top tables...";
 
             var tables = await _databaseStats.GetTopTablesBySize(20);
             TopTables.Clear();
@@ -85,13 +87,15 @@ public partial class DatabaseHealthViewModel : ObservableObject
             {
                 TopTables.Add(table);
             }
+            StatusMessage = $"Loaded {tables.Count} tables. Loading fragmented indexes...";
 
-            var fragmented = await _databaseStats.GetFragmentedIndexesAsync(30);
+            var fragmented = await _databaseStats.GetFragmentedIndexesAsync(10);
             FragmentedIndexes.Clear();
             foreach (var index in fragmented)
             {
                 FragmentedIndexes.Add(index);
             }
+            StatusMessage = $"Loaded {fragmented.Count} fragmented indexes. Loading missing indexes...";
 
             var missing = await _databaseStats.GetMissingIndexesAsync();
             MissingIndexes.Clear();
@@ -99,10 +103,16 @@ public partial class DatabaseHealthViewModel : ObservableObject
             {
                 MissingIndexes.Add(index);
             }
+            StatusMessage = $"✅ Loaded: {tables.Count} tables, {fragmented.Count} fragmented indexes, {missing.Count} missing indexes";
         }
-        catch
+        catch (Exception ex)
         {
-            // Handle error gracefully
+            StatusMessage = $"❌ Error loading data: {ex.Message}";
+            System.Windows.MessageBox.Show(
+                $"Error loading database health data:\n\n{ex.Message}\n\nCheck the logs for more details.",
+                "Error",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
         }
         finally
         {

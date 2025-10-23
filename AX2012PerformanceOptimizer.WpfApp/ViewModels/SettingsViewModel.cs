@@ -185,6 +185,7 @@ public partial class SettingsViewModel : ObservableObject
                 }
 
                 _sqlConnectionManager.SetConnectionString(builder.ConnectionString);
+                _sqlConnectionManager.SetAosServerName(SelectedProfile.AosServerName);
 
                 // Mark this profile as the active connection
                 ActiveConnectionProfile = SelectedProfile;
