@@ -1202,6 +1202,44 @@ The AX 2012 Performance Optimizer provides an **unprecedented 28 features** that
 
 ---
 
-*Last Updated: October 2025*
-*Version: 2.0*
+## Recent Improvements (Version 2.1)
+
+### UI/UX Enhancements - October 2025
+
+#### Crystal Ball Feature Fixed ✅
+- **Issue**: Scenarios dropdown was empty due to missing DataContext
+- **Fix**: Added proper ViewModel injection and DataContext binding
+- **Result**: All 8 predefined scenarios now load correctly
+- **Impact**: Feature is now fully functional for business scenario predictions
+
+#### Database Health Module Improvements ✅
+- **Status Messages**: Real-time feedback during data loading
+- **Loading Indicators**: Visual "⏳ Loading..." state
+- **Empty-State Messages**: User-friendly messages when no issues detected
+  - Fragmented Indexes: "✅ No Fragmented Indexes Found - All indexes are healthy!"
+  - Missing Indexes: "✅ No Missing Indexes Detected - Database schema appears well-optimized!"
+- **Lowered Thresholds**:
+  - Fragmentation: 30% → 10% (catches more issues)
+  - Page minimum: 1000 → 100 pages (includes smaller indexes)
+- **Better UX**: Users now understand why tabs are empty instead of seeing blank screens
+
+#### Innovative Views Fixed ✅
+All 5 USP features now have proper DataContext binding:
+1. ✅ Performance Crystal Ball
+2. ✅ Performance DNA
+3. ✅ Performance Personas
+4. ✅ Performance Time Machine
+5. ✅ Performance Community
+
+**Technical Details**:
+- Added ViewModel property to all view code-behind files
+- Implemented App.GetService<T>() DI pattern
+- Set DataContext = ViewModel before InitializeComponent()
+- Pattern matches successfully working views (Dashboard, SQL Performance, etc.)
+
+---
+
+*Last Updated: October 23, 2025*
+*Version: 2.1*
 *Status: ✅ Production Ready*
+*Build: 0 Errors, 21 Warnings*
