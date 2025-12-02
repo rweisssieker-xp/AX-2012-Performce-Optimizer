@@ -2,68 +2,49 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using AX2012PerformanceOptimizer.WpfApp.Services;
 
 namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
 
 public partial class QuickActionsPanelViewModel : ObservableObject
 {
+    private readonly IQuickActionsService _quickActionsService;
+
     [ObservableProperty]
     private ObservableCollection<QuickAction> quickActions = new();
 
-    public QuickActionsPanelViewModel()
+    public QuickActionsPanelViewModel(IQuickActionsService quickActionsService)
     {
-        InitializeDefaultActions();
+        _quickActionsService = quickActionsService;
+        LoadActions();
     }
 
-    private void InitializeDefaultActions()
+    public void LoadActions()
     {
-        QuickActions.Add(new QuickAction
-        {
-            DisplayText = "📊 Export Data",
-            Description = "Export performance data to multiple formats",
-            ShortcutText = "Ctrl+E",
-            Command = new RelayCommand(() => ExecuteExport())
-        });
+        QuickActions.Clear();
+        var enabledActions = _quickActionsService.GetEnabledActions();
 
-        QuickActions.Add(new QuickAction
+        foreach (var actionDef in enabledActions)
         {
-            DisplayText = "🏠 Go to Dashboard",
-            Description = "Navigate to main dashboard",
-            ShortcutText = "Ctrl+D",
-            Command = new RelayCommand(() => ExecuteNavigateToDashboard())
-        });
+            var command = actionDef.Id switch
+            {
+                "export" => new RelayCommand(() => ExecuteExport()),
+                "dashboard" => new RelayCommand(() => ExecuteNavigateToDashboard()),
+                "performance" => new RelayCommand(() => ExecuteNavigateToPerformance()),
+                "settings" => new RelayCommand(() => ExecuteNavigateToSettings()),
+                "executive-summary" => new RelayCommand(() => ExecuteGenerateExecutiveSummary()),
+                "search-queries" => new RelayCommand(() => ExecuteSearchQueries()),
+                _ => new RelayCommand(() => { })
+            };
 
-        QuickActions.Add(new QuickAction
-        {
-            DisplayText = "📈 SQL Performance",
-            Description = "View SQL performance analysis",
-            ShortcutText = "Ctrl+P",
-            Command = new RelayCommand(() => ExecuteNavigateToPerformance())
-        });
-
-        QuickActions.Add(new QuickAction
-        {
-            DisplayText = "⚙️ Settings",
-            Description = "Open application settings",
-            ShortcutText = "",
-            Command = new RelayCommand(() => ExecuteNavigateToSettings())
-        });
-
-        QuickActions.Add(new QuickAction
-        {
-            DisplayText = "💡 Generate Executive Summary",
-            Description = "Create executive summary report",
-            ShortcutText = "",
-            Command = new RelayCommand(() => ExecuteGenerateExecutiveSummary())
-        });
-
-        QuickActions.Add(new QuickAction
-        {
-            DisplayText = "🔍 Search Queries",
-            Description = "Search for specific queries",
-            ShortcutText = "",
-            Command = new RelayCommand(() => ExecuteSearchQueries())
-        });
+            QuickActions.Add(new QuickAction
+            {
+                DisplayText = actionDef.DisplayText,
+                Description = actionDef.Description,
+                ShortcutText = actionDef.ShortcutText,
+                Command = command
+            });
+        }
     }
 
     private void ExecuteExport()

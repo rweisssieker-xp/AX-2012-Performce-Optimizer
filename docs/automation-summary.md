@@ -213,13 +213,13 @@ dotnet test --filter "FullyQualifiedName~ExportServiceTests"
 
 ## Next Steps
 
-1. **Review generated tests** with team
-2. **Add ViewModel tests** for QuickActionsPanelViewModel, ExportWizardDialogViewModel, SettingsViewModel
-3. **Add integration tests** for service interactions (e.g., ExportService + ExportTemplateService)
-4. **Set up CI/CD** to run tests automatically
-5. **Add test coverage reporting** using coverlet
-6. **Consider E2E testing** using FlaUI or similar WPF automation framework
-7. **Expand coverage** for remaining MVP Quick Wins features (Dashboard cost display, etc.)
+1. ✅ **Review generated tests** with team - Completed (92/100 score)
+2. ✅ **Add ViewModel tests** - Completed (QuickActionsPanelViewModel, ExportWizardDialogViewModel, SettingsViewModel)
+3. ✅ **Set up CI/CD** - Completed (GitHub Actions pipeline configured)
+4. ⏭️ **Add integration tests** for service interactions (e.g., ExportService + ExportTemplateService)
+5. ⏭️ Add test coverage reporting** - Configured in CI (coverlet collector)
+6. ⏭️ **Consider E2E testing** using FlaUI or similar WPF automation framework
+7. ⏭️ **Expand coverage** for remaining MVP Quick Wins features (Dashboard cost display, etc.)
 
 ---
 

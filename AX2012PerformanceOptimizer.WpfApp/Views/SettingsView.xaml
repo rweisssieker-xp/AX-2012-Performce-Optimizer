@@ -568,6 +568,109 @@
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
+        
+        <!-- Quick Actions Tab -->
+        <TabItem Header="⚡ Quick Actions">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Quick Actions Panel" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Margin="0,0,0,10"/>
+                    <TextBlock Text="Customize which actions appear in the Quick Actions Panel (Ctrl+K)" 
+                              FontSize="14" 
+                              Foreground="#666" 
+                              Margin="0,0,0,20"/>
+                    
+                    <DataGrid ItemsSource="{Binding QuickActions}"
+                             AutoGenerateColumns="False"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             GridLinesVisibility="Horizontal"
+                             HeadersVisibility="Column"
+                             AlternatingRowBackground="#F5F5F5"
+                             Margin="0,0,0,20">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="Enabled" 
+                                                   Binding="{Binding IsEnabled, Mode=TwoWay}" 
+                                                   Width="60"/>
+                            <DataGridTextColumn Header="Action" 
+                                               Binding="{Binding DisplayText}" 
+                                               Width="*" 
+                                               IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Description" 
+                                               Binding="{Binding Description}" 
+                                               Width="2*" 
+                                               IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Shortcut" 
+                                               Binding="{Binding ShortcutText}" 
+                                               Width="100" 
+                                               IsReadOnly="True"/>
+                            <DataGridTemplateColumn Header="Order" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="▲" 
+                                                   Command="{Binding DataContext.MoveQuickActionUpCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                   CommandParameter="{Binding}"
+                                                   Width="30" 
+                                                   Height="25" 
+                                                   Margin="0,0,5,0"
+                                                   ToolTip="Move up"/>
+                                            <Button Content="▼" 
+                                                   Command="{Binding DataContext.MoveQuickActionDownCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                   CommandParameter="{Binding}"
+                                                   Width="30" 
+                                                   Height="25"
+                                                   ToolTip="Move down"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <Button Content="💾 Save Quick Actions" 
+                               Command="{Binding SaveQuickActionsCommand}" 
+                               Background="#4CAF50" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="180" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand"
+                               Margin="0,0,10,0"/>
+                        <Button Content="🔄 Reset to Defaults" 
+                               Command="{Binding ResetQuickActionsCommand}" 
+                               Background="#FF9800" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="180" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand"/>
+                    </StackPanel>
+                    
+                    <Border Background="#E3F2FD" 
+                           BorderBrush="#2196F3" 
+                           BorderThickness="1" 
+                           CornerRadius="5" 
+                           Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="💡 Tips:" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,5"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11">
+                                • Uncheck actions to hide them from the Quick Actions Panel<LineBreak/>
+                                • Use ▲ and ▼ buttons to reorder actions<LineBreak/>
+                                • Changes take effect after saving and reopening the Quick Actions Panel (Ctrl+K)
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
     </TabControl>
 </UserControl>
 

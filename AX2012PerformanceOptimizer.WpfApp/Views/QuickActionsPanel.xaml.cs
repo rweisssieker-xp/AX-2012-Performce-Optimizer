@@ -8,7 +8,8 @@ public partial class QuickActionsPanel : UserControl
     public QuickActionsPanel()
     {
         InitializeComponent();
-        DataContext = App.GetService<QuickActionsPanelViewModel>();
+        var service = App.GetService<Services.IQuickActionsService>();
+        DataContext = new QuickActionsPanelViewModel(service);
     }
 }
 

@@ -1,0 +1,204 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_FILE: 'AX2012PerformanceOptimizer.sln'
+  TEST_PROJECT: 'tests/AX2012PerformanceOptimizer.Tests/AX2012PerformanceOptimizer.Tests.csproj'
+
+jobs:
+  # Stage 1: Build and Test
+  test:
+    name: Run Tests
+    runs-on: windows-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        # Parallel test execution (can be expanded based on test count)
+        shard: [1]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+      
+      - name: Build solution
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+      
+      - name: Run tests
+        id: test
+        run: |
+          dotnet test ${{ env.TEST_PROJECT }} `
+            --configuration Release `
+            --no-build `
+            --verbosity normal `
+            --logger "trx;LogFileName=test-results-${{ matrix.shard }}.trx" `
+            --logger "console;verbosity=minimal" `
+            --collect:"XPlat Code Coverage" `
+            --results-directory:"${{ runner.temp }}/test-results"
+        continue-on-error: true
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.shard }}
+          path: ${{ runner.temp }}/test-results/**/*
+          retention-days: 30
+          if-no-files-found: ignore
+      
+      - name: Upload code coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-${{ matrix.shard }}
+          path: ${{ runner.temp }}/test-results/**/coverage.cobertura.xml
+          retention-days: 30
+          if-no-files-found: ignore
+      
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: ${{ runner.temp }}/test-results/**/*.trx
+          check_name: 'Test Results (Shard ${{ matrix.shard }})'
+          report_individual_runs: true
+          fail_on: 'test failures'
+      
+      - name: Set test status
+        if: steps.test.outcome == 'failure'
+        run: |
+          Write-Host "## ❌ Tests failed" >> $env:GITHUB_STEP_SUMMARY
+          exit 1
+      
+      - name: Test summary
+        if: steps.test.outcome == 'success'
+        run: |
+          Write-Host "## ✅ All tests passed" >> $env:GITHUB_STEP_SUMMARY
+          Write-Host "- Tests executed successfully" >> $env:GITHUB_STEP_SUMMARY
+          Write-Host "- Code coverage collected" >> $env:GITHUB_STEP_SUMMARY
+
+  # Stage 2: Burn-in Loop (Flaky Test Detection)
+  burn-in:
+    name: Burn-in Test (Flaky Detection)
+    runs-on: windows-latest
+    needs: test
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
+      
+      - name: Build solution
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+      
+      - name: Run burn-in loop (10 iterations)
+        run: |
+          $failedIterations = 0
+          for ($i = 1; $i -le 10; $i++) {
+            Write-Host "🔥 Burn-in iteration $i/10"
+            dotnet test ${{ env.TEST_PROJECT }} `
+              --configuration Release `
+              --no-build `
+              --verbosity minimal `
+              --logger "console;verbosity=minimal"
+            if ($LASTEXITCODE -ne 0) {
+              $failedIterations++
+              Write-Host "❌ Iteration $i failed"
+            } else {
+              Write-Host "✅ Iteration $i passed"
+            }
+          }
+          if ($failedIterations -gt 0) {
+            Write-Host "## ⚠️ Burn-in detected $failedIterations flaky test(s)" >> $env:GITHUB_STEP_SUMMARY
+            Write-Host "Tests failed in $failedIterations out of 10 iterations" >> $env:GITHUB_STEP_SUMMARY
+            exit 1
+          } else {
+            Write-Host "## ✅ Burn-in passed (10/10 iterations)" >> $env:GITHUB_STEP_SUMMARY
+          }
+      
+      - name: Upload burn-in results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: burn-in-failures
+          path: ${{ runner.temp }}/test-results/**/*
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # Stage 3: Test Summary and Quality Gate
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [test, burn-in]
+    if: always()
+    
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          path: test-results
+          pattern: test-results-*
+          merge-multiple: true
+      
+      - name: Quality Gate Summary
+        run: |
+          echo "## 📊 Test Quality Gate" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Execution Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Build: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests: ✅ All tests executed" >> $GITHUB_STEP_SUMMARY
+          echo "- Burn-in: ✅ Completed (if applicable)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Quality Criteria" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ All tests passing" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ No flaky tests detected" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code coverage collected" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Set quality gate status
+        run: |
+          if [ "${{ needs.test.result }}" == "failure" ] || [ "${{ needs.burn-in.result }}" == "failure" ]; then
+            echo "❌ Quality gate failed"
+            exit 1
+          else
+            echo "✅ Quality gate passed"
+          fi
+

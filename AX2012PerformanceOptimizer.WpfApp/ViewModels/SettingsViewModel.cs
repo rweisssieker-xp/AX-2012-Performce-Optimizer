@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Windows.Input;
+using System.Linq;
 
 namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
 
@@ -97,16 +98,23 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<TranslationExample> translationExamples = new();
 
+    [ObservableProperty]
+    private ObservableCollection<QuickActionViewModel> quickActions = new();
+
+    private readonly IQuickActionsService _quickActionsService;
+
     public SettingsViewModel(
         IConfigurationService configService,
         ISqlConnectionManager sqlConnectionManager,
         IKeyboardShortcutService keyboardShortcutService,
-        PlainLanguageService plainLanguageService)
+        PlainLanguageService plainLanguageService,
+        IQuickActionsService quickActionsService)
     {
         _configService = configService;
         _sqlConnectionManager = sqlConnectionManager;
         _keyboardShortcutService = keyboardShortcutService;
         _plainLanguageService = plainLanguageService;
+        _quickActionsService = quickActionsService;
 
         // Load profiles on initialization
         _ = LoadProfilesAsync();
@@ -114,6 +122,7 @@ public partial class SettingsViewModel : ObservableObject
         LoadKeyboardShortcuts();
         LoadPlainLanguageSettings();
         LoadTranslationExamples();
+        LoadQuickActions();
     }
 
     [RelayCommand]
@@ -530,6 +539,81 @@ public partial class SettingsViewModel : ObservableObject
         // TODO: Save to configuration
         StatusMessage = "✅ Plain Language settings saved successfully";
     }
+
+    private void LoadQuickActions()
+    {
+        QuickActions.Clear();
+        var actions = _quickActionsService.GetAllAvailableActions();
+        foreach (var action in actions)
+        {
+            QuickActions.Add(new QuickActionViewModel
+            {
+                Id = action.Id,
+                DisplayText = action.DisplayText,
+                Description = action.Description,
+                ShortcutText = action.ShortcutText,
+                IsEnabled = action.IsEnabled,
+                Order = action.Order
+            });
+        }
+    }
+
+    [RelayCommand]
+    private void SaveQuickActions()
+    {
+        var actions = QuickActions.Select(vm => new QuickActionDefinition
+        {
+            Id = vm.Id,
+            DisplayText = vm.DisplayText,
+            Description = vm.Description,
+            ShortcutText = vm.ShortcutText,
+            IsEnabled = vm.IsEnabled,
+            Order = vm.Order
+        }).ToList();
+
+        _quickActionsService.SaveActions(actions);
+        StatusMessage = "Quick Actions saved successfully";
+    }
+
+    [RelayCommand]
+    private void ResetQuickActions()
+    {
+        _quickActionsService.ResetToDefaults();
+        LoadQuickActions();
+        StatusMessage = "Quick Actions reset to defaults";
+    }
+
+    [RelayCommand]
+    private void MoveQuickActionUp(QuickActionViewModel? action)
+    {
+        if (action == null) return;
+        var index = QuickActions.IndexOf(action);
+        if (index > 0)
+        {
+            QuickActions.Move(index, index - 1);
+            UpdateOrders();
+        }
+    }
+
+    [RelayCommand]
+    private void MoveQuickActionDown(QuickActionViewModel? action)
+    {
+        if (action == null) return;
+        var index = QuickActions.IndexOf(action);
+        if (index < QuickActions.Count - 1)
+        {
+            QuickActions.Move(index, index + 1);
+            UpdateOrders();
+        }
+    }
+
+    private void UpdateOrders()
+    {
+        for (int i = 0; i < QuickActions.Count; i++)
+        {
+            QuickActions[i].Order = i;
+        }
+    }
 }
 
 public partial class KeyboardShortcutViewModel : ObservableObject
@@ -563,6 +647,23 @@ public class TranslationExample
 {
     public string Technical { get; set; } = string.Empty;
     public string Plain { get; set; } = string.Empty;
+}
+
+public class QuickActionViewModel : ObservableObject
+{
+    public string Id { get; set; } = string.Empty;
+    public string DisplayText { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string ShortcutText { get; set; } = string.Empty;
+    
+    private bool _isEnabled;
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set => SetProperty(ref _isEnabled, value);
+    }
+    
+    public int Order { get; set; }
 }
 
 

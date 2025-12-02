@@ -216,6 +216,9 @@ public partial class App : Application
                 // NEW: Plain Language Service
                 services.AddSingleton<Services.PlainLanguageService>();
                 
+                // NEW: Quick Actions Service
+                services.AddSingleton<Services.IQuickActionsService, Services.QuickActionsService>();
+                
                 // NEW: Export Wizard Dialog ViewModel
                 services.AddTransient<ExportWizardDialogViewModel>();
 

@@ -1,5 +1,7 @@
 # AX 2012 Performance Optimizer
 
+![Tests](https://github.com/rweisssieker-xp/AX-2012-Performce-Optimizer/workflows/Test%20Suite/badge.svg)
+
 A native Windows application for monitoring and optimizing Microsoft Dynamics AX 2012 R3 CU13 performance with SQL Server 2016. This tool provides real-time performance metrics, graphical visualizations, and intelligent optimization recommendations.
 
 ## 📚 Documentation
