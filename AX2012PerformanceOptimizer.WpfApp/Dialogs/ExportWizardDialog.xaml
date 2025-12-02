@@ -1,0 +1,117 @@
+<Window x:Class="AX2012PerformanceOptimizer.WpfApp.Dialogs.ExportWizardDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Export Wizard" 
+        Height="500" 
+        Width="600"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="📤 Export Data" 
+                      FontSize="20" 
+                      FontWeight="Bold" 
+                      Margin="0,0,0,5"/>
+            <TextBlock Text="Export performance data to multiple formats" 
+                      FontSize="12" 
+                      Foreground="#666"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <StackPanel Grid.Row="1">
+            <!-- Format Selection -->
+            <TextBlock Text="Export Format" FontWeight="Bold" Margin="0,0,0,10"/>
+            <ComboBox ItemsSource="{Binding ExportFormats}"
+                     SelectedItem="{Binding SelectedFormat, Mode=TwoWay}"
+                     Margin="0,0,0,20"/>
+
+            <!-- Role Selection -->
+            <TextBlock Text="Role Template (Optional)" FontWeight="Bold" Margin="0,0,0,10"/>
+            <ComboBox ItemsSource="{Binding Roles}"
+                     SelectedItem="{Binding SelectedRole, Mode=TwoWay}"
+                     Margin="0,0,0,10"/>
+            
+            <!-- Template Selection -->
+            <TextBlock Text="Report Template" FontWeight="Bold" Margin="0,0,0,10"/>
+            <ComboBox ItemsSource="{Binding AvailableTemplates}"
+                     SelectedItem="{Binding SelectedTemplate, Mode=TwoWay}"
+                     IsEnabled="{Binding SelectedRole, Converter={StaticResource NullToBoolConverter}}"
+                     Margin="0,0,0,20"/>
+
+            <!-- Date Range -->
+            <TextBlock Text="Date Range (Optional)" FontWeight="Bold" Margin="0,0,0,10"/>
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <DatePicker Grid.Column="0" 
+                           SelectedDate="{Binding StartDate, Mode=TwoWay}"
+                           Margin="0,0,10,0"/>
+                <TextBlock Grid.Column="1" Text="to" VerticalAlignment="Center"/>
+                <DatePicker Grid.Column="2" 
+                           SelectedDate="{Binding EndDate, Mode=TwoWay}"
+                           Margin="10,0,0,0"/>
+            </Grid>
+
+            <!-- File Path -->
+            <TextBlock Text="Save Location" FontWeight="Bold" Margin="0,0,0,10"/>
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" 
+                        Text="{Binding FilePath, Mode=TwoWay}"
+                        Margin="0,0,10,0"/>
+                <Button Grid.Column="1" 
+                       Content="Browse..."
+                       Command="{Binding BrowseCommand}"
+                       Width="80"/>
+            </Grid>
+
+            <!-- Preview -->
+            <TextBlock Text="Preview" FontWeight="Bold" Margin="0,0,0,10"/>
+            <Border BorderBrush="#E0E0E0" 
+                   BorderThickness="1" 
+                   Background="#FAFAFA"
+                   Height="100"
+                   Padding="10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{Binding PreviewText}" 
+                              TextWrapping="Wrap"
+                              FontFamily="Consolas"
+                              FontSize="10"/>
+                </ScrollViewer>
+            </Border>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <WrapPanel Grid.Row="2" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="Cancel" 
+                   Click="Cancel_Click"
+                   Width="100" 
+                   Height="35" 
+                   Margin="0,0,10,0"/>
+            <Button Content="Export" 
+                   Command="{Binding ExportCommand}"
+                   Background="#4CAF50" 
+                   Foreground="White" 
+                   FontWeight="Bold"
+                   Width="100" 
+                   Height="35"/>
+        </WrapPanel>
+    </Grid>
+</Window>
+

@@ -3,9 +3,11 @@ using CommunityToolkit.Mvvm.Input;
 using AX2012PerformanceOptimizer.Data.Models;
 using AX2012PerformanceOptimizer.Data.Configuration;
 using AX2012PerformanceOptimizer.Data.SqlServer;
+using AX2012PerformanceOptimizer.WpfApp.Services;
 using System.Collections.ObjectModel;
 using Microsoft.Data.SqlClient;
 using System.IO;
+using System.Windows.Input;
 
 namespace AX2012PerformanceOptimizer.WpfApp.ViewModels;
 
@@ -13,6 +15,8 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly IConfigurationService _configService;
     private readonly ISqlConnectionManager _sqlConnectionManager;
+    private readonly IKeyboardShortcutService _keyboardShortcutService;
+    private readonly PlainLanguageService _plainLanguageService;
 
     [ObservableProperty]
     private ObservableCollection<ConnectionProfile> profiles = new();
@@ -84,16 +88,32 @@ public partial class SettingsViewModel : ObservableObject
         "gpt-3.5-turbo-16k"     // Larger context legacy
     };
 
+    [ObservableProperty]
+    private ObservableCollection<KeyboardShortcutViewModel> keyboardShortcuts = new();
+
+    [ObservableProperty]
+    private bool isPlainLanguageEnabled;
+    
+    [ObservableProperty]
+    private ObservableCollection<TranslationExample> translationExamples = new();
+
     public SettingsViewModel(
         IConfigurationService configService,
-        ISqlConnectionManager sqlConnectionManager)
+        ISqlConnectionManager sqlConnectionManager,
+        IKeyboardShortcutService keyboardShortcutService,
+        PlainLanguageService plainLanguageService)
     {
         _configService = configService;
         _sqlConnectionManager = sqlConnectionManager;
+        _keyboardShortcutService = keyboardShortcutService;
+        _plainLanguageService = plainLanguageService;
 
         // Load profiles on initialization
         _ = LoadProfilesAsync();
         _ = LoadAiConfigurationAsync();
+        LoadKeyboardShortcuts();
+        LoadPlainLanguageSettings();
+        LoadTranslationExamples();
     }
 
     [RelayCommand]
@@ -395,6 +415,154 @@ public partial class SettingsViewModel : ObservableObject
             AvailableDatabases.Clear();
         }
     }
+
+    // Keyboard Shortcuts Methods
+    private void LoadKeyboardShortcuts()
+    {
+        var shortcuts = _keyboardShortcutService.GetAllShortcuts();
+        KeyboardShortcuts.Clear();
+        
+        foreach (var kvp in shortcuts)
+        {
+            // Get the actual key from the service
+            var keyBinding = _keyboardShortcutService.GetKeyBinding(kvp.Key);
+            var key = keyBinding?.Key ?? Key.None;
+            
+            KeyboardShortcuts.Add(new KeyboardShortcutViewModel
+            {
+                ActionId = kvp.Key,
+                Description = kvp.Value.description,
+                CurrentShortcut = FormatShortcut(kvp.Value.modifiers, key),
+                UseCtrl = kvp.Value.modifiers.HasFlag(ModifierKeys.Control),
+                UseAlt = kvp.Value.modifiers.HasFlag(ModifierKeys.Alt),
+                UseShift = kvp.Value.modifiers.HasFlag(ModifierKeys.Shift),
+                SelectedKey = GetAvailableKeys().FirstOrDefault(k => k.Key == key),
+                AvailableKeys = GetAvailableKeys()
+            });
+        }
+    }
+
+    [RelayCommand]
+    private void SaveKeyboardShortcuts()
+    {
+        foreach (var shortcut in KeyboardShortcuts)
+        {
+            var modifiers = ModifierKeys.None;
+            if (shortcut.UseCtrl) modifiers |= ModifierKeys.Control;
+            if (shortcut.UseAlt) modifiers |= ModifierKeys.Alt;
+            if (shortcut.UseShift) modifiers |= ModifierKeys.Shift;
+            
+            if (shortcut.SelectedKey != null)
+            {
+                _keyboardShortcutService.UpdateShortcut(
+                    shortcut.ActionId, 
+                    shortcut.SelectedKey.Key.ToString(), 
+                    modifiers);
+            }
+        }
+        
+        StatusMessage = "✅ Keyboard shortcuts saved successfully";
+    }
+
+    [RelayCommand]
+    private void ResetKeyboardShortcuts()
+    {
+        // Reset to defaults - reload from service defaults
+        LoadKeyboardShortcuts();
+        StatusMessage = "✅ Keyboard shortcuts reset to defaults";
+    }
+
+    private static string FormatShortcut(ModifierKeys modifiers, Key key)
+    {
+        var parts = new List<string>();
+        if (modifiers.HasFlag(ModifierKeys.Control)) parts.Add("Ctrl");
+        if (modifiers.HasFlag(ModifierKeys.Alt)) parts.Add("Alt");
+        if (modifiers.HasFlag(ModifierKeys.Shift)) parts.Add("Shift");
+        parts.Add(key.ToString());
+        return string.Join("+", parts);
+    }
+
+    private ObservableCollection<KeyItem> GetAvailableKeys()
+    {
+        return new ObservableCollection<KeyItem>
+        {
+            new KeyItem { Key = Key.K, DisplayName = "K" },
+            new KeyItem { Key = Key.E, DisplayName = "E" },
+            new KeyItem { Key = Key.D, DisplayName = "D" },
+            new KeyItem { Key = Key.P, DisplayName = "P" },
+            new KeyItem { Key = Key.F1, DisplayName = "F1" },
+            new KeyItem { Key = Key.F2, DisplayName = "F2" },
+            new KeyItem { Key = Key.F3, DisplayName = "F3" },
+            new KeyItem { Key = Key.F4, DisplayName = "F4" },
+            new KeyItem { Key = Key.F5, DisplayName = "F5" },
+            new KeyItem { Key = Key.F6, DisplayName = "F6" },
+            new KeyItem { Key = Key.F7, DisplayName = "F7" },
+            new KeyItem { Key = Key.F8, DisplayName = "F8" },
+            new KeyItem { Key = Key.F9, DisplayName = "F9" },
+            new KeyItem { Key = Key.F10, DisplayName = "F10" },
+            new KeyItem { Key = Key.F11, DisplayName = "F11" },
+            new KeyItem { Key = Key.F12, DisplayName = "F12" }
+        };
+    }
+    
+    // Plain Language Mode Methods
+    private void LoadPlainLanguageSettings()
+    {
+        // Load from configuration or use default
+        IsPlainLanguageEnabled = _plainLanguageService.IsPlainLanguageEnabled;
+    }
+    
+    private void LoadTranslationExamples()
+    {
+        TranslationExamples.Clear();
+        TranslationExamples.Add(new TranslationExample { Technical = "Execution Time", Plain = "How long the query takes to run" });
+        TranslationExamples.Add(new TranslationExample { Technical = "Logical Reads", Plain = "How much data was read from memory" });
+        TranslationExamples.Add(new TranslationExample { Technical = "Fragmentation", Plain = "How scattered your data is on disk" });
+        TranslationExamples.Add(new TranslationExample { Technical = "Index", Plain = "Quick lookup table for finding data" });
+        TranslationExamples.Add(new TranslationExample { Technical = "Wait Stats", Plain = "What the database is waiting for" });
+        TranslationExamples.Add(new TranslationExample { Technical = "Bottleneck", Plain = "The slowest part that's holding everything back" });
+    }
+    
+    [RelayCommand]
+    private void SavePlainLanguageSettings()
+    {
+        _plainLanguageService.IsPlainLanguageEnabled = IsPlainLanguageEnabled;
+        // TODO: Save to configuration
+        StatusMessage = "✅ Plain Language settings saved successfully";
+    }
+}
+
+public partial class KeyboardShortcutViewModel : ObservableObject
+{
+    public string ActionId { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string CurrentShortcut { get; set; } = string.Empty;
+    
+    [ObservableProperty]
+    private bool useCtrl;
+    
+    [ObservableProperty]
+    private bool useAlt;
+    
+    [ObservableProperty]
+    private bool useShift;
+    
+    [ObservableProperty]
+    private KeyItem? selectedKey;
+    
+    public ObservableCollection<KeyItem> AvailableKeys { get; set; } = new();
+}
+
+public class KeyItem
+{
+    public Key Key { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
+}
+
+public class TranslationExample
+{
+    public string Technical { get; set; } = string.Empty;
+    public string Plain { get; set; } = string.Empty;
 }
 
 

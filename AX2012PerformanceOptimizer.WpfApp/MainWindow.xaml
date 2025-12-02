@@ -7,14 +7,40 @@
         mc:Ignorable="d"
         Title="AX 2012 Performance Optimizer" 
         Height="800" Width="1400"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        x:Name="MainGrid">
     
     <Grid>
+        <Grid.Resources>
+            <Style x:Key="QuickActionButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Foreground" Value="#2C3E50"/>
+                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#F5F5F5"/>
+                        <Setter Property="BorderBrush" Value="#2196F3"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Resources>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
+        
+        <!-- Quick Actions Panel Overlay -->
+        <Popup x:Name="QuickActionsPopup" 
+               Placement="Center" 
+               StaysOpen="False"
+               AllowsTransparency="True"
+               PopupAnimation="Fade">
+            <views:QuickActionsPanel/>
+        </Popup>
 
         <!-- Header -->
         <Border Grid.Row="0" Background="#2C3E50" Padding="15">
@@ -29,7 +55,7 @@
         </Border>
 
         <!-- Main Content with Tabs -->
-        <TabControl Grid.Row="1" Margin="10">
+        <TabControl x:Name="MainTabControl" Grid.Row="1" Margin="10">
             <TabItem Header="🏠 Dashboard">
                 <views:DashboardView/>
             </TabItem>

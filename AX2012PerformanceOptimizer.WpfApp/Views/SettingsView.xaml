@@ -6,11 +6,14 @@
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200">
     
-    <Grid Margin="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <TabControl Margin="20">
+        <!-- Connection Profiles Tab -->
+        <TabItem Header="🔌 Connection Profiles">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
         <!-- Profiles List -->
         <Border Grid.Column="0" 
@@ -393,6 +396,178 @@
 
             </StackPanel>
         </ScrollViewer>
-    </Grid>
+            </Grid>
+        </TabItem>
+        
+        <!-- Plain Language Mode Tab -->
+        <TabItem Header="💬 Plain Language Mode">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Plain Language Mode" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Margin="0,0,0,10"/>
+                    <TextBlock Text="Translate technical terms into plain language for better understanding" 
+                              FontSize="14" 
+                              Foreground="#666" 
+                              Margin="0,0,0,20"/>
+                    
+                    <!-- Enable Toggle -->
+                    <CheckBox Content="Enable Plain Language Mode" 
+                             IsChecked="{Binding IsPlainLanguageEnabled, Mode=TwoWay}"
+                             FontSize="16"
+                             FontWeight="Bold"
+                             Margin="0,0,0,20"/>
+                    
+                    <Border Background="#E3F2FD" 
+                           BorderBrush="#2196F3" 
+                           BorderThickness="1" 
+                           CornerRadius="5" 
+                           Padding="15" 
+                           Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="💡 What This Does:" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,5"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11">
+                                • Technical terms are replaced with plain language explanations<LineBreak/>
+                                • AI explanations use simpler language<LineBreak/>
+                                • Tooltips show plain language descriptions<LineBreak/>
+                                • Makes the tool accessible to non-technical users
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Example Translations -->
+                    <TextBlock Text="Example Translations" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <DataGrid ItemsSource="{Binding TranslationExamples}"
+                             AutoGenerateColumns="False"
+                             IsReadOnly="True"
+                             HeadersVisibility="Column"
+                             AlternatingRowBackground="#F5F5F5"
+                             Margin="0,0,0,20">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Technical Term" Binding="{Binding Technical}" Width="*"/>
+                            <DataGridTextColumn Header="Plain Language" Binding="{Binding Plain}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <Button Content="💾 Save Settings" 
+                           Command="{Binding SavePlainLanguageSettingsCommand}" 
+                           Background="#4CAF50" 
+                           Foreground="White" 
+                           FontWeight="Bold" 
+                           Width="150" 
+                           Height="35" 
+                           BorderThickness="0" 
+                           Cursor="Hand"/>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+        
+        <!-- Keyboard Shortcuts Tab -->
+        <TabItem Header="⌨️ Keyboard Shortcuts">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Keyboard Shortcuts" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Margin="0,0,0,10"/>
+                    <TextBlock Text="Customize keyboard shortcuts to match your workflow" 
+                              FontSize="14" 
+                              Foreground="#666" 
+                              Margin="0,0,0,20"/>
+                    
+                    <DataGrid ItemsSource="{Binding KeyboardShortcuts}"
+                             AutoGenerateColumns="False"
+                             CanUserAddRows="False"
+                             CanUserDeleteRows="False"
+                             GridLinesVisibility="Horizontal"
+                             HeadersVisibility="Column"
+                             AlternatingRowBackground="#F5F5F5"
+                             Margin="0,0,0,20">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Action" 
+                                              Binding="{Binding Description}" 
+                                              Width="*" 
+                                              IsReadOnly="True"/>
+                            <DataGridTemplateColumn Header="Key" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding AvailableKeys}"
+                                                 SelectedItem="{Binding SelectedKey, Mode=TwoWay}"
+                                                 DisplayMemberPath="DisplayName"
+                                                 SelectedValuePath="Key"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Modifiers" Width="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox Content="Ctrl" 
+                                                     IsChecked="{Binding UseCtrl, Mode=TwoWay}" 
+                                                     Margin="0,0,10,0"/>
+                                            <CheckBox Content="Alt" 
+                                                     IsChecked="{Binding UseAlt, Mode=TwoWay}" 
+                                                     Margin="0,0,10,0"/>
+                                            <CheckBox Content="Shift" 
+                                                     IsChecked="{Binding UseShift, Mode=TwoWay}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Current" 
+                                              Binding="{Binding CurrentShortcut}" 
+                                              Width="150" 
+                                              IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <WrapPanel>
+                        <Button Content="💾 Save Shortcuts" 
+                               Command="{Binding SaveKeyboardShortcutsCommand}" 
+                               Background="#4CAF50" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="150" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand"/>
+                        
+                        <Button Content="🔄 Reset to Defaults" 
+                               Command="{Binding ResetKeyboardShortcutsCommand}" 
+                               Background="#FF9800" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="170" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand" 
+                               Margin="10,0,0,0"/>
+                    </WrapPanel>
+                    
+                    <Border Background="#E3F2FD" 
+                           BorderBrush="#2196F3" 
+                           BorderThickness="1" 
+                           CornerRadius="5" 
+                           Padding="15" 
+                           Margin="0,20,0,0">
+                        <StackPanel>
+                            <TextBlock Text="💡 Tips:" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,5"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11">
+                                • Changes take effect immediately<LineBreak/>
+                                • Shortcuts are saved to your user profile<LineBreak/>
+                                • Use Ctrl+K to open Quick Actions Panel<LineBreak/>
+                                • Press F1 for help at any time
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+    </TabControl>
 </UserControl>
 

@@ -31,6 +31,15 @@ public partial class DashboardViewModel : ObservableObject
 
     [ObservableProperty]
     private string statusMessage = "Ready";
+    
+    [ObservableProperty]
+    private decimal dailyCost;
+    
+    [ObservableProperty]
+    private decimal monthlyCost;
+    
+    [ObservableProperty]
+    private decimal potentialSavings;
 
     public DashboardViewModel(
         ISqlQueryMonitorService sqlMonitor,
@@ -56,6 +65,9 @@ public partial class DashboardViewModel : ObservableObject
         RunningBatchJobs = 7;
         DatabaseSizeMB = 15360; // 15 GB
         ExpensiveQueries = 23;
+        DailyCost = 125.50m;
+        MonthlyCost = 3765.00m;
+        PotentialSavings = 850.00m;
         StatusMessage = "Demo Mode - Connect to database for live data";
     }
 

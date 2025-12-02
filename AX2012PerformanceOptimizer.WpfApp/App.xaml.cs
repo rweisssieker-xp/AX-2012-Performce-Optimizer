@@ -8,6 +8,7 @@ using AX2012PerformanceOptimizer.Data.SqlServer;
 using AX2012PerformanceOptimizer.Data.AxConnector;
 using AX2012PerformanceOptimizer.Data.Configuration;
 using AX2012PerformanceOptimizer.WpfApp.ViewModels;
+using AX2012PerformanceOptimizer.WpfApp.Services;
 
 namespace AX2012PerformanceOptimizer.WpfApp;
 
@@ -205,6 +206,18 @@ public partial class App : Application
 
                 // NEW: Dialog Service for modern popups
                 services.AddSingleton<Services.IDialogService, Services.DialogService>();
+                
+                // NEW: Keyboard Shortcut Service
+                services.AddSingleton<Services.IKeyboardShortcutService, Services.KeyboardShortcutService>();
+                
+                // NEW: Export Service
+                services.AddSingleton<Services.IExportService, Services.ExportService>();
+                
+                // NEW: Plain Language Service
+                services.AddSingleton<Services.PlainLanguageService>();
+                
+                // NEW: Export Wizard Dialog ViewModel
+                services.AddTransient<ExportWizardDialogViewModel>();
 
                 // NEW: Natural Language to SQL Generator (Phase 1 AI Feature)
                 services.AddSingleton<AX2012PerformanceOptimizer.Core.Services.NaturalLanguageToSql.INaturalLanguageToSqlService>(sp =>
@@ -315,6 +328,7 @@ public partial class App : Application
 
                 // PHASE 1 QUICK WINS: ViewModels
                 services.AddTransient<ExecutiveScorecardViewModel>();
+                services.AddTransient<QuickActionsPanelViewModel>();
 
                 // 🚀 INNOVATIVE USP FEATURES: ViewModels
                 services.AddTransient<PerformanceDnaViewModel>();
