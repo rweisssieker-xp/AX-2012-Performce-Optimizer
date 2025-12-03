@@ -2,7 +2,7 @@
 
 **Story Key:** 1-1-performance-stack-builder  
 **Story Points:** 5  
-**Status:** Ready for Dev  
+**Status:** Ready for Review  
 **Sprint:** Sprint 1
 
 ---

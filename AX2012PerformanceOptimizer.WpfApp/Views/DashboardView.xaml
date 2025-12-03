@@ -5,14 +5,69 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
     
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
-            <!-- Header -->
-            <TextBlock Text="System Dashboard" 
-                      FontSize="24" 
-                      FontWeight="Bold" 
-                      Margin="0,0,0,20"/>
+            <!-- Header with Role Selector -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0"
+                          Text="System Dashboard" 
+                          FontSize="24" 
+                          FontWeight="Bold"/>
+                
+                <!-- Role Selector -->
+                <ComboBox Grid.Column="1"
+                         ItemsSource="{Binding AvailableRoles}"
+                         SelectedItem="{Binding SelectedRole}"
+                         MinWidth="200"
+                         ToolTip="Select your role to see role-specific metrics">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </Grid>
+            
+            <!-- Role-Specific Widgets -->
+            <ItemsControl ItemsSource="{Binding RoleData.Widgets}" 
+                         Margin="0,0,0,20"
+                         Visibility="{Binding RoleData, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="White" 
+                               BorderBrush="#E0E0E0" 
+                               BorderThickness="1" 
+                               CornerRadius="10" 
+                               Padding="20" 
+                               Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" 
+                                          FontSize="18" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,10"/>
+                                <TextBlock Text="{Binding Description}" 
+                                          Foreground="#757575" 
+                                          Margin="0,0,0,10"/>
+                                <TextBlock Text="Widget data will be displayed here" 
+                                          Foreground="#757575" 
+                                          FontStyle="Italic"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Default Dashboard (when no role data) -->
+            <StackPanel Visibility="{Binding RoleData, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
             
             <!-- Prominent Cost Display -->
             <Border Background="#FFF3E0" 
@@ -238,6 +293,7 @@
                     <TextBlock Text="Loading data..." FontWeight="SemiBold"/>
                 </StackPanel>
             </Border>
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

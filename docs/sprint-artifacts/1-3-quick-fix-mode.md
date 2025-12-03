@@ -2,7 +2,7 @@
 
 **Story Key:** 1-3-quick-fix-mode  
 **Story Points:** 3  
-**Status:** Ready for Dev  
+**Status:** Ready for Review  
 **Sprint:** Sprint 1
 
 ---

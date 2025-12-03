@@ -104,6 +104,15 @@ public partial class MainWindow : Window
             "Toggle Survival Mode"
         );
 
+        // Ctrl+Shift+M: Minimal Mode Toggle
+        _keyboardShortcutService.RegisterShortcut(
+            "MinimalMode",
+            ModifierKeys.Control | ModifierKeys.Shift,
+            Key.M,
+            () => ToggleMinimalMode(),
+            "Toggle Minimal Mode"
+        );
+
         // F1: Help documentation
         _keyboardShortcutService.RegisterShortcut(
             "Help",
@@ -168,6 +177,14 @@ public partial class MainWindow : Window
             ModifierKeys.Control | ModifierKeys.Shift
         );
         bindings.Add(survivalModeBinding);
+
+        // Ctrl+Shift+M
+        var minimalModeBinding = new KeyBinding(
+            new RelayCommand(() => ToggleMinimalMode()),
+            Key.M,
+            ModifierKeys.Control | ModifierKeys.Shift
+        );
+        bindings.Add(minimalModeBinding);
 
         // F1
         var helpBinding = new KeyBinding(
@@ -262,6 +279,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ToggleMinimalMode()
+    {
+        var performanceModeService = App.GetService<Core.Services.MinimalMode.IPerformanceModeService>();
+        performanceModeService.ToggleMinimalModeAsync().Wait();
+        
+        var isEnabled = performanceModeService.IsMinimalModeEnabled;
+        MessageBox.Show(
+            isEnabled 
+                ? "✅ Minimal Mode enabled\n\nResource usage reduced:\n• Refresh interval: 300s\n• Animations disabled\n• Simplified UI\n• Reduced data collection" 
+                : "✅ Minimal Mode disabled\n\nFull features restored",
+            "Minimal Mode",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
     private void ShowHelp()
     {
         MessageBox.Show("Help Documentation (F1)\n\nKeyboard Shortcuts:\n" +
@@ -270,6 +302,8 @@ public partial class MainWindow : Window
             "• Ctrl+D - Dashboard\n" +
             "• Ctrl+P - SQL Performance\n" +
             "• Ctrl+Shift+Q - Quick-Fix Mode\n" +
+            "• Ctrl+Shift+S - Survival Mode\n" +
+            "• Ctrl+Shift+M - Minimal Mode\n" +
             "• F1 - Help\n\n" +
             "For more information, visit the Settings tab.",
             "Help", MessageBoxButton.OK, MessageBoxImage.Information);

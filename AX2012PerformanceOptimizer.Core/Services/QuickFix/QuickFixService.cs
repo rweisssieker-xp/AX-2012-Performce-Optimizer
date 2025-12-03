@@ -49,7 +49,7 @@ public class QuickFixService : IQuickFixService
 
         try
         {
-            var quickFixes = new List<QuickFix>();
+            var quickFixes = new List<Models.QuickFix.QuickFix>();
             var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(30)); // 30-second timeout
 
@@ -195,18 +195,18 @@ public class QuickFixService : IQuickFixService
         };
     }
 
-    private async Task AnalyzeMissingIndexesAsync(List<QuickFix> fixes, CancellationToken cancellationToken)
+    private async Task AnalyzeMissingIndexesAsync(List<Models.QuickFix.QuickFix> fixes, CancellationToken cancellationToken)
     {
         try
         {
             var recommendations = await _recommendationEngine.GetRecommendationsByCategoryAsync(
-                RecommendationCategory.IndexOptimization);
+                RecommendationCategory.IndexManagement);
 
             foreach (var rec in recommendations.Take(3))
             {
                 if (cancellationToken.IsCancellationRequested) break;
 
-                fixes.Add(new QuickFix
+                fixes.Add(new Models.QuickFix.QuickFix
                 {
                     Title = $"Create Index: {rec.Title}",
                     Description = rec.Description,
@@ -228,12 +228,12 @@ public class QuickFixService : IQuickFixService
         }
     }
 
-    private async Task AnalyzeOutdatedStatisticsAsync(List<QuickFix> fixes, CancellationToken cancellationToken)
+    private async Task AnalyzeOutdatedStatisticsAsync(List<Models.QuickFix.QuickFix> fixes, CancellationToken cancellationToken)
     {
         try
         {
             var recommendations = await _recommendationEngine.GetRecommendationsByCategoryAsync(
-                RecommendationCategory.IndexOptimization);
+                RecommendationCategory.IndexManagement);
 
             var statsRecommendations = recommendations
                 .Where(r => r.Description.Contains("statistics", StringComparison.OrdinalIgnoreCase))
@@ -243,7 +243,7 @@ public class QuickFixService : IQuickFixService
             {
                 if (cancellationToken.IsCancellationRequested) break;
 
-                fixes.Add(new QuickFix
+                fixes.Add(new Models.QuickFix.QuickFix
                 {
                     Title = "Update Statistics",
                     Description = rec.Description,
@@ -264,7 +264,7 @@ public class QuickFixService : IQuickFixService
         }
     }
 
-    private async Task AnalyzeBlockingQueriesAsync(List<QuickFix> fixes, CancellationToken cancellationToken)
+    private async Task AnalyzeBlockingQueriesAsync(List<Models.QuickFix.QuickFix> fixes, CancellationToken cancellationToken)
     {
         try
         {
@@ -279,7 +279,7 @@ public class QuickFixService : IQuickFixService
             {
                 if (cancellationToken.IsCancellationRequested) break;
 
-                fixes.Add(new QuickFix
+                fixes.Add(new Models.QuickFix.QuickFix
                 {
                     Title = $"Kill Blocking Query: {query.QueryHash.Substring(0, 8)}...",
                     Description = $"Query is blocking other queries. Avg wait: {query.AvgElapsedTimeMs - query.AvgCpuTimeMs:F0}ms",
@@ -301,7 +301,7 @@ public class QuickFixService : IQuickFixService
         }
     }
 
-    private async Task AnalyzeHighCpuQueriesAsync(List<QuickFix> fixes, CancellationToken cancellationToken)
+    private async Task AnalyzeHighCpuQueriesAsync(List<Models.QuickFix.QuickFix> fixes, CancellationToken cancellationToken)
     {
         try
         {
@@ -312,7 +312,7 @@ public class QuickFixService : IQuickFixService
             {
                 if (cancellationToken.IsCancellationRequested) break;
 
-                fixes.Add(new QuickFix
+                fixes.Add(new Models.QuickFix.QuickFix
                 {
                     Title = $"Optimize High CPU Query",
                     Description = $"Query uses {query.AvgCpuTimeMs:F0}ms CPU time on average",
@@ -334,7 +334,7 @@ public class QuickFixService : IQuickFixService
         }
     }
 
-    private async Task<ApplyResult> ApplyCreateIndexAsync(QuickFix fix)
+    private async Task<ApplyResult> ApplyCreateIndexAsync(Models.QuickFix.QuickFix fix)
     {
         // Simulate index creation
         await Task.Delay(100);
@@ -348,7 +348,7 @@ public class QuickFixService : IQuickFixService
         };
     }
 
-    private async Task<ApplyResult> ApplyUpdateStatisticsAsync(QuickFix fix)
+    private async Task<ApplyResult> ApplyUpdateStatisticsAsync(Models.QuickFix.QuickFix fix)
     {
         // Simulate statistics update
         await Task.Delay(50);
@@ -361,7 +361,7 @@ public class QuickFixService : IQuickFixService
         };
     }
 
-    private async Task<ApplyResult> ApplyRebuildIndexAsync(QuickFix fix)
+    private async Task<ApplyResult> ApplyRebuildIndexAsync(Models.QuickFix.QuickFix fix)
     {
         // Simulate index rebuild
         await Task.Delay(200);
@@ -374,7 +374,7 @@ public class QuickFixService : IQuickFixService
         };
     }
 
-    private async Task<ApplyResult> ApplyClearCacheAsync(QuickFix fix)
+    private async Task<ApplyResult> ApplyClearCacheAsync(Models.QuickFix.QuickFix fix)
     {
         // Simulate cache clear
         await Task.Delay(10);
@@ -387,7 +387,7 @@ public class QuickFixService : IQuickFixService
         };
     }
 
-    private async Task<ApplyResult> ApplyKillBlockingQueryAsync(QuickFix fix)
+    private async Task<ApplyResult> ApplyKillBlockingQueryAsync(Models.QuickFix.QuickFix fix)
     {
         // Simulate killing blocking query
         await Task.Delay(50);
@@ -400,7 +400,7 @@ public class QuickFixService : IQuickFixService
         };
     }
 
-    private string GenerateSummary(List<QuickFix> fixes)
+    private string GenerateSummary(List<Models.QuickFix.QuickFix> fixes)
     {
         if (!fixes.Any())
         {

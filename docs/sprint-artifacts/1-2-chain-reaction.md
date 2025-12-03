@@ -2,7 +2,7 @@
 
 **Story Key:** 1-2-chain-reaction  
 **Story Points:** 5  
-**Status:** Ready for Dev  
+**Status:** Ready for Review  
 **Sprint:** Sprint 1
 
 ---

@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using AX2012PerformanceOptimizer.Core.Services.Explanation;
+using AX2012PerformanceOptimizer.Core.Services.MinimalMode;
 using AX2012PerformanceOptimizer.Data.Models;
 using AX2012PerformanceOptimizer.Data.Configuration;
 using AX2012PerformanceOptimizer.Data.SqlServer;
@@ -18,6 +20,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ISqlConnectionManager _sqlConnectionManager;
     private readonly IKeyboardShortcutService _keyboardShortcutService;
     private readonly PlainLanguageService _plainLanguageService;
+    private readonly IPerformanceModeService _performanceModeService;
+    private readonly Core.Services.Explanation.ISimpleExplanationService _simpleExplanationService;
 
     [ObservableProperty]
     private ObservableCollection<ConnectionProfile> profiles = new();
@@ -94,12 +98,31 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private bool isPlainLanguageEnabled;
-    
+
+    [ObservableProperty]
+    private bool isSimpleExplanationModeEnabled;
+
     [ObservableProperty]
     private ObservableCollection<TranslationExample> translationExamples = new();
 
     [ObservableProperty]
     private ObservableCollection<QuickActionViewModel> quickActions = new();
+
+    // Minimal Mode Properties
+    [ObservableProperty]
+    private bool isMinimalModeEnabled;
+
+    [ObservableProperty]
+    private int refreshIntervalSeconds = 300;
+
+    [ObservableProperty]
+    private bool useSimplifiedUI = true;
+
+    [ObservableProperty]
+    private bool disableAnimations = true;
+
+    [ObservableProperty]
+    private bool reduceDataCollection = true;
 
     private readonly IQuickActionsService _quickActionsService;
 
@@ -108,21 +131,33 @@ public partial class SettingsViewModel : ObservableObject
         ISqlConnectionManager sqlConnectionManager,
         IKeyboardShortcutService keyboardShortcutService,
         PlainLanguageService plainLanguageService,
-        IQuickActionsService quickActionsService)
+        IQuickActionsService quickActionsService,
+        IPerformanceModeService performanceModeService,
+        ISimpleExplanationService simpleExplanationService)
     {
         _configService = configService;
         _sqlConnectionManager = sqlConnectionManager;
         _keyboardShortcutService = keyboardShortcutService;
         _plainLanguageService = plainLanguageService;
         _quickActionsService = quickActionsService;
+        _performanceModeService = performanceModeService;
+        _simpleExplanationService = simpleExplanationService;
 
         // Load profiles on initialization
         _ = LoadProfilesAsync();
         _ = LoadAiConfigurationAsync();
         LoadKeyboardShortcuts();
         LoadPlainLanguageSettings();
+        LoadSimpleExplanationSettings();
         LoadTranslationExamples();
         LoadQuickActions();
+        LoadMinimalModeSettings();
+
+        // Subscribe to minimal mode changes
+        _performanceModeService.MinimalModeChanged += (sender, enabled) =>
+        {
+            IsMinimalModeEnabled = enabled;
+        };
     }
 
     [RelayCommand]
@@ -520,6 +555,12 @@ public partial class SettingsViewModel : ObservableObject
         // Load from configuration or use default
         IsPlainLanguageEnabled = _plainLanguageService.IsPlainLanguageEnabled;
     }
+
+    private void LoadSimpleExplanationSettings()
+    {
+        // Load from service
+        IsSimpleExplanationModeEnabled = _simpleExplanationService.IsSimpleModeEnabled;
+    }
     
     private void LoadTranslationExamples()
     {
@@ -538,6 +579,23 @@ public partial class SettingsViewModel : ObservableObject
         _plainLanguageService.IsPlainLanguageEnabled = IsPlainLanguageEnabled;
         // TODO: Save to configuration
         StatusMessage = "✅ Plain Language settings saved successfully";
+    }
+
+    [RelayCommand]
+    private void ToggleSimpleExplanationMode()
+    {
+        IsSimpleExplanationModeEnabled = !IsSimpleExplanationModeEnabled;
+        _simpleExplanationService.IsSimpleModeEnabled = IsSimpleExplanationModeEnabled;
+        StatusMessage = IsSimpleExplanationModeEnabled
+            ? "✅ Simple Explanation Mode enabled - Technical terms will be explained in plain language"
+            : "✅ Simple Explanation Mode disabled - Technical terms shown";
+    }
+
+    [RelayCommand]
+    private void SaveSimpleExplanationSettings()
+    {
+        _simpleExplanationService.IsSimpleModeEnabled = IsSimpleExplanationModeEnabled;
+        StatusMessage = "✅ Simple Explanation settings saved successfully";
     }
 
     private void LoadQuickActions()
@@ -614,6 +672,42 @@ public partial class SettingsViewModel : ObservableObject
             QuickActions[i].Order = i;
         }
     }
+
+    // Minimal Mode Methods
+    private void LoadMinimalModeSettings()
+    {
+        var settings = _performanceModeService.GetSettings();
+        IsMinimalModeEnabled = settings.IsEnabled;
+        RefreshIntervalSeconds = settings.RefreshIntervalSeconds;
+        UseSimplifiedUI = settings.UseSimplifiedUI;
+        DisableAnimations = settings.DisableAnimations;
+        ReduceDataCollection = settings.ReduceDataCollection;
+    }
+
+    [RelayCommand]
+    private async Task ToggleMinimalModeAsync()
+    {
+        await _performanceModeService.ToggleMinimalModeAsync();
+        LoadMinimalModeSettings();
+        StatusMessage = IsMinimalModeEnabled 
+            ? "✅ Minimal Mode enabled - Resource usage reduced" 
+            : "✅ Minimal Mode disabled - Full features restored";
+    }
+
+    [RelayCommand]
+    private void SaveMinimalModeSettings()
+    {
+        var settings = _performanceModeService.GetSettings();
+        settings.IsEnabled = IsMinimalModeEnabled;
+        settings.RefreshIntervalSeconds = RefreshIntervalSeconds;
+        settings.UseSimplifiedUI = UseSimplifiedUI;
+        settings.DisableAnimations = DisableAnimations;
+        settings.ReduceDataCollection = ReduceDataCollection;
+        
+        _performanceModeService.UpdateSettings(settings);
+        StatusMessage = "✅ Minimal Mode settings saved successfully";
+    }
+
 }
 
 public partial class KeyboardShortcutViewModel : ObservableObject

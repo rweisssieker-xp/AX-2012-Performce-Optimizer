@@ -1,6 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using AX2012PerformanceOptimizer.Core.Models.StakeholderDashboard;
 using AX2012PerformanceOptimizer.Core.Services;
+using AX2012PerformanceOptimizer.Core.Services.StakeholderDashboard;
 using System.Text;
 using System.Windows;
 
@@ -13,6 +15,7 @@ public partial class DashboardViewModel : ObservableObject
     private readonly IBatchJobMonitorService _batchJobMonitor;
     private readonly IDatabaseStatsService _databaseStats;
     private readonly IAiPerformanceInsightsService? _insightsService;
+    private readonly IRoleBasedDashboardService _roleDashboardService;
 
     [ObservableProperty]
     private int activeUsers;
@@ -41,21 +44,89 @@ public partial class DashboardViewModel : ObservableObject
     [ObservableProperty]
     private decimal potentialSavings;
 
+    [ObservableProperty]
+    private UserRole selectedRole = UserRole.DBA;
+
+    [ObservableProperty]
+    private RoleBasedDashboardData? roleData;
+
+    [ObservableProperty]
+    private List<UserRole> availableRoles = new();
+
     public DashboardViewModel(
         ISqlQueryMonitorService sqlMonitor,
         IAosMonitorService aosMonitor,
         IBatchJobMonitorService batchJobMonitor,
         IDatabaseStatsService databaseStats,
+        IRoleBasedDashboardService roleDashboardService,
         IAiPerformanceInsightsService? insightsService = null)
     {
         _sqlMonitor = sqlMonitor;
         _aosMonitor = aosMonitor;
         _batchJobMonitor = batchJobMonitor;
         _databaseStats = databaseStats;
+        _roleDashboardService = roleDashboardService;
         _insightsService = insightsService;
+
+        // Initialize available roles
+        AvailableRoles = _roleDashboardService.GetAvailableRoles().ToList();
+
+        // Load saved role preference (simplified)
+        SelectedRole = LoadRolePreference();
 
         // Initialize with demo data
         LoadDemoData();
+    }
+
+    partial void OnSelectedRoleChanged(UserRole value)
+    {
+        LoadRoleDataAsync().ConfigureAwait(false);
+        SaveRolePreference(value);
+    }
+
+    [RelayCommand]
+    private async Task LoadRoleDataAsync()
+    {
+        IsLoading = true;
+        StatusMessage = $"Loading {SelectedRole} dashboard...";
+
+        try
+        {
+            var timeRange = new TimeRange
+            {
+                StartTime = DateTime.UtcNow.AddHours(-24),
+                EndTime = DateTime.UtcNow
+            };
+
+            RoleData = await _roleDashboardService.GetDashboardDataAsync(SelectedRole, timeRange);
+            StatusMessage = $"{SelectedRole} dashboard loaded";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error loading {SelectedRole} dashboard";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ChangeRole(UserRole role)
+    {
+        SelectedRole = role;
+    }
+
+    private UserRole LoadRolePreference()
+    {
+        // Simplified - would use ISettingsService
+        return UserRole.DBA; // Default
+    }
+
+    private void SaveRolePreference(UserRole role)
+    {
+        // Simplified - would use ISettingsService
+        // Store preference: "SelectedDashboardRole" = role
     }
 
     private void LoadDemoData()

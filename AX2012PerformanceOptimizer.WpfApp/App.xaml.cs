@@ -5,8 +5,13 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Windows;
 using AX2012PerformanceOptimizer.Core.Services;
+using AX2012PerformanceOptimizer.Core.Services.ExecutiveDashboard;
+using AX2012PerformanceOptimizer.Core.Services.Explanation;
+using AX2012PerformanceOptimizer.Core.Services.MinimalMode;
 using AX2012PerformanceOptimizer.Core.Services.PerformanceStack;
 using AX2012PerformanceOptimizer.Core.Services.QuickFix;
+using AX2012PerformanceOptimizer.Core.Services.Sonification;
+using AX2012PerformanceOptimizer.Core.Services.StakeholderDashboard;
 using AX2012PerformanceOptimizer.Data.SqlServer;
 using AX2012PerformanceOptimizer.Data.AxConnector;
 using AX2012PerformanceOptimizer.Data.Configuration;
@@ -186,6 +191,41 @@ public partial class App : Application
                     var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
                     var cache = sp.GetRequiredService<IMemoryCache>();
                     return new QuickFixService(recommendationEngine, sqlMonitor, databaseStats, cache, logger);
+                });
+
+                // NEW: Role-Based Dashboard Service
+                services.AddSingleton<IRoleBasedDashboardService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<RoleBasedDashboardService>>();
+                    var executiveScorecard = sp.GetRequiredService<IExecutiveScorecardService>();
+                    var sqlMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var queryAnalyzer = sp.GetRequiredService<IQueryAnalyzerService>();
+                    var aosMonitor = sp.GetRequiredService<IAosMonitorService>();
+                    var costCalculator = sp.GetRequiredService<IPerformanceCostCalculatorService>();
+                    return new RoleBasedDashboardService(executiveScorecard, sqlMonitor, queryAnalyzer, aosMonitor, costCalculator, logger);
+                });
+
+                // NEW: Sonification Service
+                services.AddSingleton<ISonificationService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<SonificationService>>();
+                    var sqlMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var aosMonitor = sp.GetRequiredService<IAosMonitorService>();
+                    return new SonificationService(sqlMonitor, aosMonitor, logger);
+                });
+
+                // NEW: Performance Mode Service (Minimal Mode)
+                services.AddSingleton<IPerformanceModeService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<PerformanceModeService>>();
+                    return new PerformanceModeService(logger);
+                });
+
+                // NEW: Simple Explanation Service
+                services.AddSingleton<ISimpleExplanationService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<SimpleExplanationService>>();
+                    return new SimpleExplanationService(logger);
                 });
 
                 // PHASE 1 AI FEATURES: Natural Language Query Assistant (with real data services)
@@ -368,6 +408,9 @@ public partial class App : Application
 
                 // NEW: Quick-Fix ViewModel
                 services.AddTransient<QuickFixViewModel>();
+
+                // NEW: Sonification ViewModel
+                services.AddTransient<SonificationViewModel>();
 
                 // 🚀 INNOVATIVE USP FEATURES: ViewModels
                 services.AddTransient<PerformanceDnaViewModel>();

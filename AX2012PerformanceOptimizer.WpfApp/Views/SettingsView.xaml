@@ -569,6 +569,189 @@
             </ScrollViewer>
         </TabItem>
         
+        <!-- Minimal Mode Tab -->
+        <TabItem Header="⚡ Minimal Mode">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Performance Minimal Mode" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Margin="0,0,0,10"/>
+                    <TextBlock Text="Reduce resource usage by simplifying the UI and reducing data collection" 
+                              FontSize="14" 
+                              Foreground="#666" 
+                              Margin="0,0,0,20"/>
+                    
+                    <!-- Status Message -->
+                    <Border Background="#E3F2FD" 
+                           BorderBrush="#2196F3" 
+                           BorderThickness="1" 
+                           CornerRadius="5" 
+                           Padding="10" 
+                           Margin="0,0,0,20"
+                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}">
+                        <TextBlock Text="{Binding StatusMessage}" 
+                                  FontWeight="SemiBold"/>
+                    </Border>
+                    
+                    <!-- Enable Toggle -->
+                    <CheckBox Content="Enable Minimal Mode" 
+                             IsChecked="{Binding IsMinimalModeEnabled, Mode=TwoWay}"
+                             FontSize="16"
+                             FontWeight="Bold"
+                             Margin="0,0,0,20"/>
+                    
+                    <Border Background="#FFF3E0" 
+                           BorderBrush="#FF9800" 
+                           BorderThickness="1" 
+                           CornerRadius="5" 
+                           Padding="15" 
+                           Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="💡 What This Does:" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,5"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11">
+                                • Reduces refresh intervals to save CPU<LineBreak/>
+                                • Simplifies UI by disabling animations<LineBreak/>
+                                • Reduces data collection frequency<LineBreak/>
+                                • Use Ctrl+Shift+M to toggle quickly
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Settings -->
+                    <TextBlock Text="Settings" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
+                    
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Grid.Column="0" Text="Refresh Interval (seconds):" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" 
+                                Text="{Binding RefreshIntervalSeconds, Mode=TwoWay}"
+                                IsEnabled="{Binding IsMinimalModeEnabled}"
+                                Margin="10,0,0,0"/>
+                    </Grid>
+                    
+                    <CheckBox Content="Use Simplified UI" 
+                             IsChecked="{Binding UseSimplifiedUI, Mode=TwoWay}"
+                             IsEnabled="{Binding IsMinimalModeEnabled}"
+                             Margin="0,0,0,10"/>
+                    
+                    <CheckBox Content="Disable Animations" 
+                             IsChecked="{Binding DisableAnimations, Mode=TwoWay}"
+                             IsEnabled="{Binding IsMinimalModeEnabled}"
+                             Margin="0,0,0,10"/>
+                    
+                    <CheckBox Content="Reduce Data Collection" 
+                             IsChecked="{Binding ReduceDataCollection, Mode=TwoWay}"
+                             IsEnabled="{Binding IsMinimalModeEnabled}"
+                             Margin="0,0,0,20"/>
+                    
+                    <WrapPanel>
+                        <Button Content="💾 Save Settings" 
+                               Command="{Binding SaveMinimalModeSettingsCommand}" 
+                               Background="#4CAF50" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="150" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand"
+                               Margin="0,0,10,0"/>
+                        <Button Content="🔄 Toggle Mode" 
+                               Command="{Binding ToggleMinimalModeCommand}" 
+                               Background="#FF9800" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="150" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand"/>
+                    </WrapPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+        
+        <!-- Simple Explanation Tab -->
+        <TabItem Header="💡 Simple Explanation">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
+                    <TextBlock Text="Simple Explanation Mode" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              Margin="0,0,0,10"/>
+                    <TextBlock Text="Explain technical terms in plain language with analogies" 
+                              FontSize="14" 
+                              Foreground="#666" 
+                              Margin="0,0,0,20"/>
+                    
+                    <!-- Status Message -->
+                    <Border Background="#E3F2FD" 
+                           BorderBrush="#2196F3" 
+                           BorderThickness="1" 
+                           CornerRadius="5" 
+                           Padding="10" 
+                           Margin="0,0,0,20"
+                           Visibility="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}">
+                        <TextBlock Text="{Binding StatusMessage}" 
+                                  FontWeight="SemiBold"/>
+                    </Border>
+                    
+                    <!-- Enable Toggle -->
+                    <CheckBox Content="Enable Simple Explanation Mode" 
+                             IsChecked="{Binding IsSimpleExplanationModeEnabled, Mode=TwoWay}"
+                             FontSize="16"
+                             FontWeight="Bold"
+                             Margin="0,0,0,20"/>
+                    
+                    <Border Background="#E8F5E9" 
+                           BorderBrush="#4CAF50" 
+                           BorderThickness="1" 
+                           CornerRadius="5" 
+                           Padding="15" 
+                           Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="💡 What This Does:" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,5"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11">
+                                • Technical terms are explained with simple analogies<LineBreak/>
+                                • Complex concepts are broken down into everyday language<LineBreak/>
+                                • Makes performance data accessible to everyone<LineBreak/>
+                                • Works across all views and recommendations
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    
+                    <WrapPanel>
+                        <Button Content="💾 Save Settings" 
+                               Command="{Binding SaveSimpleExplanationSettingsCommand}" 
+                               Background="#4CAF50" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="150" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand"
+                               Margin="0,0,10,0"/>
+                        <Button Content="🔄 Toggle Mode" 
+                               Command="{Binding ToggleSimpleExplanationModeCommand}" 
+                               Background="#4CAF50" 
+                               Foreground="White" 
+                               FontWeight="Bold" 
+                               Width="150" 
+                               Height="35" 
+                               BorderThickness="0" 
+                               Cursor="Hand"/>
+                    </WrapPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+        
         <!-- Quick Actions Tab -->
         <TabItem Header="⚡ Quick Actions">
             <ScrollViewer VerticalScrollBarVisibility="Auto">

@@ -153,6 +153,11 @@
                 <views:ExecutiveDashboardView/>
             </TabItem>
 
+            <!-- 🔊 Sprint 2: Performance Sonification -->
+            <TabItem Header="🔊 Sonification">
+                <views:SonificationView/>
+            </TabItem>
+
             <!-- 🚀 PHASE 2 AI FEATURES -->
             <TabItem Header="🩺 AI Therapist">
                 <views:PerformanceTherapistView/>

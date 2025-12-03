@@ -5,6 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1400">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -107,7 +110,7 @@
             </Border>
 
             <!-- Separator -->
-            <Separator Grid.Column="1" Orientation="Vertical"/>
+            <Border Grid.Column="1" Width="1" Background="#E0E0E0" Margin="10,0"/>
 
             <!-- Impact Details Panel -->
             <Border Grid.Column="2" Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="2"
@@ -127,7 +130,7 @@
                         </Border>
 
                         <!-- Impact Metrics -->
-                        <Grid Margin="0,0,0,15" Visibility="{Binding ImpactResult, Converter={x:Static BooleanToVisibilityConverter.Default}}">
+                        <Grid Margin="0,0,0,15" Visibility="{Binding ImpactResult, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
@@ -149,21 +152,21 @@
                         <!-- Confidence -->
                         <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
                                CornerRadius="5" Padding="15" Margin="0,0,0,15"
-                               Visibility="{Binding ImpactResult, Converter={x:Static BooleanToVisibilityConverter.Default}}">
+                               Visibility="{Binding ImpactResult, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel>
                                 <TextBlock Text="Confidence" FontWeight="Bold" Margin="0,0,0,5"/>
                                 <TextBlock Text="{Binding ImpactResult.Confidence, StringFormat='{}{0:F1}%'}" 
                                           FontSize="16"/>
-                                <TextBlock Text="{Binding ImpactResult.Confidence, Converter={StaticResource ConfidenceLevelConverter}}" 
+                                <TextBlock Text="{Binding ImpactResult.Confidence, StringFormat='{}{0:F1}%'}" 
                                           Foreground="#757575" FontSize="11"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Affected Queries List -->
                         <TextBlock Text="Affected Queries" FontWeight="Bold" Margin="0,0,0,10"
-                                  Visibility="{Binding ImpactResult, Converter={x:Static BooleanToVisibilityConverter.Default}}"/>
+                                  Visibility="{Binding ImpactResult, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <ItemsControl ItemsSource="{Binding ImpactResult.AffectedQueries}"
-                                     Visibility="{Binding ImpactResult, Converter={x:Static BooleanToVisibilityConverter.Default}}">
+                                     Visibility="{Binding ImpactResult, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
@@ -183,9 +186,9 @@
                                             </StackPanel>
                                             
                                             <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                                <TextBlock Text="{Binding ImpactType, Converter={StaticResource ImpactTypeConverter}}" 
+                                                <TextBlock Text="{Binding ImpactType}" 
                                                           FontWeight="Bold"
-                                                          Foreground="{Binding ImpactType, Converter={StaticResource ImpactTypeColorConverter}}"/>
+                                                          Foreground="#4CAF50"/>
                                                 <TextBlock Text="{Binding ImprovementPercentage, StringFormat='{}{0:F1}%'}" 
                                                           FontSize="12" Margin="0,5,0,0"/>
                                             </StackPanel>
