@@ -8,9 +8,8 @@ public class NullToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value != null && !string.IsNullOrWhiteSpace(value.ToString())
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        // If value is null, return Collapsed; otherwise Visible
+        return value == null ? Visibility.Collapsed : Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -3,10 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:AX2012PerformanceOptimizer.WpfApp.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200">
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
     </UserControl.Resources>
     
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -37,10 +39,10 @@
                 </ComboBox>
             </Grid>
             
-            <!-- Role-Specific Widgets -->
+            <!-- Role-Specific Widgets (shown when RoleData is loaded and has widgets) -->
             <ItemsControl ItemsSource="{Binding RoleData.Widgets}" 
                          Margin="0,0,0,20"
-                         Visibility="{Binding RoleData, Converter={StaticResource BooleanToVisibilityConverter}}">
+                         Visibility="{Binding RoleData, Converter={StaticResource NullToVisibilityConverter}}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="White" 
@@ -66,8 +68,8 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Default Dashboard (when no role data) -->
-            <StackPanel Visibility="{Binding RoleData, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
+            <!-- Default Dashboard (always visible - shows metrics even when role widgets are loaded) -->
+            <StackPanel>
             
             <!-- Prominent Cost Display -->
             <Border Background="#FFF3E0" 

@@ -108,9 +108,9 @@
                             <PathFigure StartPoint="0,0">
                                 <LineSegment Point="0,15"/>
                                 <LineSegment Point="-5,10"/>
-                                <PathFigure StartPoint="0,15">
-                                    <LineSegment Point="5,10"/>
-                                </PathFigure>
+                            </PathFigure>
+                            <PathFigure StartPoint="0,15">
+                                <LineSegment Point="5,10"/>
                             </PathFigure>
                         </PathGeometry>
                     </Path.Data>
@@ -177,9 +177,9 @@
                             <PathFigure StartPoint="0,0">
                                 <LineSegment Point="0,15"/>
                                 <LineSegment Point="-5,10"/>
-                                <PathFigure StartPoint="0,15">
-                                    <LineSegment Point="5,10"/>
-                                </PathFigure>
+                            </PathFigure>
+                            <PathFigure StartPoint="0,15">
+                                <LineSegment Point="5,10"/>
                             </PathFigure>
                         </PathGeometry>
                     </Path.Data>
@@ -246,9 +246,9 @@
                             <PathFigure StartPoint="0,0">
                                 <LineSegment Point="0,15"/>
                                 <LineSegment Point="-5,10"/>
-                                <PathFigure StartPoint="0,15">
-                                    <LineSegment Point="5,10"/>
-                                </PathFigure>
+                            </PathFigure>
+                            <PathFigure StartPoint="0,15">
+                                <LineSegment Point="5,10"/>
                             </PathFigure>
                         </PathGeometry>
                     </Path.Data>

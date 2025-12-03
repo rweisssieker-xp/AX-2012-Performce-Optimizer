@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using AX2012PerformanceOptimizer.Core.Models.StakeholderDashboard;
 using AX2012PerformanceOptimizer.Core.Services;
 using AX2012PerformanceOptimizer.Core.Services.StakeholderDashboard;
+using AX2012PerformanceOptimizer.Data.SqlServer;
 using System.Text;
 using System.Windows;
 
@@ -16,6 +17,7 @@ public partial class DashboardViewModel : ObservableObject
     private readonly IDatabaseStatsService _databaseStats;
     private readonly IAiPerformanceInsightsService? _insightsService;
     private readonly IRoleBasedDashboardService _roleDashboardService;
+    private readonly ISqlConnectionManager _connectionManager;
 
     [ObservableProperty]
     private int activeUsers;
@@ -59,6 +61,7 @@ public partial class DashboardViewModel : ObservableObject
         IBatchJobMonitorService batchJobMonitor,
         IDatabaseStatsService databaseStats,
         IRoleBasedDashboardService roleDashboardService,
+        ISqlConnectionManager connectionManager,
         IAiPerformanceInsightsService? insightsService = null)
     {
         _sqlMonitor = sqlMonitor;
@@ -66,7 +69,11 @@ public partial class DashboardViewModel : ObservableObject
         _batchJobMonitor = batchJobMonitor;
         _databaseStats = databaseStats;
         _roleDashboardService = roleDashboardService;
+        _connectionManager = connectionManager;
         _insightsService = insightsService;
+
+        // Listen to connection changes
+        _connectionManager.ConnectionChanged += OnConnectionChanged;
 
         // Initialize available roles
         AvailableRoles = _roleDashboardService.GetAvailableRoles().ToList();
@@ -74,8 +81,33 @@ public partial class DashboardViewModel : ObservableObject
         // Load saved role preference (simplified)
         SelectedRole = LoadRolePreference();
 
-        // Initialize with demo data
-        LoadDemoData();
+        // Initialize with demo data if not connected
+        if (!_connectionManager.IsConnected)
+        {
+            LoadDemoData();
+        }
+        else
+        {
+            // Already connected - load role data
+            LoadRoleDataAsync().ConfigureAwait(false);
+        }
+    }
+
+    private async void OnConnectionChanged(object? sender, ConnectionChangedEventArgs e)
+    {
+        if (e.IsConnected)
+        {
+            // Connection established - load role-specific data for current role
+            StatusMessage = $"Connected - Loading {SelectedRole} dashboard...";
+            await LoadRoleDataAsync();
+        }
+        else
+        {
+            // Connection lost - clear role data and show demo data
+            RoleData = null;
+            LoadDemoData();
+            StatusMessage = "Connection lost - Showing demo data";
+        }
     }
 
     partial void OnSelectedRoleChanged(UserRole value)
@@ -87,6 +119,15 @@ public partial class DashboardViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadRoleDataAsync()
     {
+        // Only load role data if connected, otherwise show demo/default dashboard
+        if (!_connectionManager.IsConnected)
+        {
+            RoleData = null;
+            LoadDemoData();
+            StatusMessage = "Not connected - Showing demo data. Connect to database to see role-specific dashboard.";
+            return;
+        }
+
         IsLoading = true;
         StatusMessage = $"Loading {SelectedRole} dashboard...";
 
@@ -99,11 +140,30 @@ public partial class DashboardViewModel : ObservableObject
             };
 
             RoleData = await _roleDashboardService.GetDashboardDataAsync(SelectedRole, timeRange);
-            StatusMessage = $"{SelectedRole} dashboard loaded";
+            
+            // Also update the default dashboard metrics with real data
+            await LoadDataAsync();
+            
+            // Update cost data from role-specific metrics if available
+            if (RoleData?.RoleSpecificMetrics != null)
+            {
+                if (RoleData.RoleSpecificMetrics.TryGetValue("DailyCost", out var dailyCostObj) && dailyCostObj is double dailyCost)
+                {
+                    DailyCost = (decimal)dailyCost;
+                }
+                if (RoleData.RoleSpecificMetrics.TryGetValue("MonthlyCost", out var monthlyCostObj) && monthlyCostObj is double monthlyCost)
+                {
+                    MonthlyCost = (decimal)monthlyCost;
+                }
+            }
+            
+            StatusMessage = $"{SelectedRole} dashboard loaded successfully";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error loading {SelectedRole} dashboard";
+            StatusMessage = $"Error loading {SelectedRole} dashboard: {ex.Message}";
+            RoleData = null;
+            LoadDemoData();
         }
         finally
         {

@@ -12,7 +12,19 @@ public partial class DashboardView : UserControl
         ViewModel = App.GetService<DashboardViewModel>();
         DataContext = ViewModel;
         InitializeComponent();
-        // Don't auto-load data on startup - user must configure connection first
+        
+        // Load role data when view is loaded
+        Loaded += async (s, e) =>
+        {
+            try
+            {
+                await ViewModel.LoadRoleDataCommand.ExecuteAsync(null);
+            }
+            catch
+            {
+                // Ignore errors - will show default dashboard
+            }
+        };
     }
 }
 
