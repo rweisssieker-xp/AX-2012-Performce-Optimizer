@@ -11,6 +11,7 @@ using FluentAssertions;
 using Moq;
 using System.Windows.Input;
 using Xunit;
+using Services = AX2012PerformanceOptimizer.WpfApp.Services;
 
 namespace AX2012PerformanceOptimizer.Tests.ViewModels;
 
@@ -24,6 +25,7 @@ public class SettingsViewModelTests : IDisposable
     private readonly Mock<ISqlConnectionManager> _mockSqlConnectionManager;
     private readonly Mock<IKeyboardShortcutService> _mockKeyboardShortcutService;
     private readonly PlainLanguageService _plainLanguageService;
+    private readonly Mock<IQuickActionsService> _mockQuickActionsService;
     private readonly string _tempDir;
 
     public SettingsViewModelTests()
@@ -33,6 +35,7 @@ public class SettingsViewModelTests : IDisposable
         _mockSqlConnectionManager = new Mock<ISqlConnectionManager>();
         _mockKeyboardShortcutService = new Mock<IKeyboardShortcutService>();
         _plainLanguageService = new PlainLanguageService();
+        _mockQuickActionsService = new Mock<IQuickActionsService>();
         _tempDir = TestHelpers.GetTempDirectory();
 
         // Setup default mock behavior
@@ -41,6 +44,13 @@ public class SettingsViewModelTests : IDisposable
             {
                 { "quick-actions", (System.Windows.Input.ModifierKeys.Control, "Open Quick Actions") },
                 { "export", (System.Windows.Input.ModifierKeys.Control, "Export Data") }
+            });
+
+        _mockQuickActionsService.Setup(x => x.GetAllAvailableActions())
+            .Returns(new List<QuickActionDefinition>
+            {
+                new QuickActionDefinition { Id = "export", DisplayText = "Export", Description = "Export data", ShortcutText = "Ctrl+E", IsEnabled = true, Order = 0 },
+                new QuickActionDefinition { Id = "dashboard", DisplayText = "Dashboard", Description = "Go to dashboard", ShortcutText = "Ctrl+D", IsEnabled = true, Order = 1 }
             });
     }
 
@@ -161,7 +171,8 @@ public class SettingsViewModelTests : IDisposable
             _mockConfigService.Object,
             _mockSqlConnectionManager.Object,
             _mockKeyboardShortcutService.Object,
-            _plainLanguageService
+            _plainLanguageService,
+            _mockQuickActionsService.Object
         );
     }
 

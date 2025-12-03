@@ -9,8 +9,10 @@
             BorderBrush="#E0E0E0" 
             BorderThickness="1" 
             CornerRadius="4"
-            Padding="15"
-            Effect="{StaticResource DropShadowEffect}">
+            Padding="15">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Direction="315" ShadowDepth="5" BlurRadius="10" Opacity="0.3"/>
+            </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

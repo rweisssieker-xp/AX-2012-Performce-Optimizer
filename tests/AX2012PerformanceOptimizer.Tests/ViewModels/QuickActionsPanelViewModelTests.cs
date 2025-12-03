@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using AX2012PerformanceOptimizer.Tests.ViewModels;
 using AX2012PerformanceOptimizer.WpfApp.ViewModels;
+using AX2012PerformanceOptimizer.WpfApp.Services;
 using FluentAssertions;
+using Moq;
 using Xunit;
 
 namespace AX2012PerformanceOptimizer.Tests.ViewModels;
@@ -13,13 +16,27 @@ namespace AX2012PerformanceOptimizer.Tests.ViewModels;
 /// </summary>
 public class QuickActionsPanelViewModelTests
 {
+    private readonly Mock<IQuickActionsService> _mockQuickActionsService;
+
+    public QuickActionsPanelViewModelTests()
+    {
+        _mockQuickActionsService = new Mock<IQuickActionsService>();
+        _mockQuickActionsService.Setup(x => x.GetEnabledActions())
+            .Returns(new List<QuickActionDefinition>
+            {
+                new QuickActionDefinition { Id = "export", DisplayText = "📊 Export Data", Description = "Export performance data", ShortcutText = "Ctrl+E", IsEnabled = true, Order = 0 },
+                new QuickActionDefinition { Id = "dashboard", DisplayText = "🏠 Go to Dashboard", Description = "Navigate to main dashboard", ShortcutText = "Ctrl+D", IsEnabled = true, Order = 1 },
+                new QuickActionDefinition { Id = "settings", DisplayText = "⚙️ Settings", Description = "Open application settings", ShortcutText = "", IsEnabled = true, Order = 2 }
+            });
+    }
+
     [Fact]
     [Trait("Priority", "P1")]
     public void Constructor_ShouldInitializeDefaultActions()
     {
         // GIVEN: A new QuickActionsPanelViewModel
         // WHEN: Creating the view model
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
 
         // THEN: Default actions should be initialized
         viewModel.QuickActions.Should().NotBeEmpty();
@@ -31,7 +48,7 @@ public class QuickActionsPanelViewModelTests
     public void QuickActions_ShouldContainExportAction()
     {
         // GIVEN: A QuickActionsPanelViewModel
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
 
         // WHEN: Checking actions
         // THEN: Export action should be present
@@ -43,7 +60,7 @@ public class QuickActionsPanelViewModelTests
     public void QuickActions_ShouldContainDashboardAction()
     {
         // GIVEN: A QuickActionsPanelViewModel
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
 
         // WHEN: Checking actions
         // THEN: Dashboard action should be present
@@ -55,7 +72,7 @@ public class QuickActionsPanelViewModelTests
     public void QuickActions_ShouldContainSettingsAction()
     {
         // GIVEN: A QuickActionsPanelViewModel
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
 
         // WHEN: Checking actions
         // THEN: Settings action should be present
@@ -67,7 +84,7 @@ public class QuickActionsPanelViewModelTests
     public void ExecuteNavigateToDashboard_ShouldRaiseNavigateToTabEvent()
     {
         // GIVEN: A QuickActionsPanelViewModel with event handler
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
         int? navigatedTab = null;
         viewModel.NavigateToTab += (tab) => { navigatedTab = tab; };
 
@@ -84,7 +101,12 @@ public class QuickActionsPanelViewModelTests
     public void ExecuteNavigateToPerformance_ShouldRaiseNavigateToTabEvent()
     {
         // GIVEN: A QuickActionsPanelViewModel with event handler
-        var viewModel = new QuickActionsPanelViewModel();
+        _mockQuickActionsService.Setup(x => x.GetEnabledActions())
+            .Returns(new List<QuickActionDefinition>
+            {
+                new QuickActionDefinition { Id = "performance", DisplayText = "📈 SQL Performance", Description = "View SQL performance", ShortcutText = "Ctrl+P", IsEnabled = true, Order = 0 }
+            });
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
         int? navigatedTab = null;
         viewModel.NavigateToTab += (tab) => { navigatedTab = tab; };
 
@@ -101,7 +123,7 @@ public class QuickActionsPanelViewModelTests
     public void ExecuteNavigateToSettings_ShouldRaiseNavigateToTabEvent()
     {
         // GIVEN: A QuickActionsPanelViewModel with event handler
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
         int? navigatedTab = null;
         viewModel.NavigateToTab += (tab) => { navigatedTab = tab; };
 
@@ -118,7 +140,7 @@ public class QuickActionsPanelViewModelTests
     public void QuickActions_ShouldHaveCommands()
     {
         // GIVEN: A QuickActionsPanelViewModel
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
 
         // WHEN: Checking all actions
         // THEN: All actions should have commands
@@ -130,11 +152,33 @@ public class QuickActionsPanelViewModelTests
     public void QuickActions_ShouldHaveDescriptions()
     {
         // GIVEN: A QuickActionsPanelViewModel
-        var viewModel = new QuickActionsPanelViewModel();
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
 
         // WHEN: Checking all actions
         // THEN: All actions should have descriptions
         viewModel.QuickActions.Should().OnlyContain(a => !string.IsNullOrEmpty(a.Description));
+    }
+
+    [Fact]
+    [Trait("Priority", "P2")]
+    public void LoadActions_ShouldReloadFromService()
+    {
+        // GIVEN: QuickActionsPanelViewModel with updated service
+        var viewModel = new QuickActionsPanelViewModel(_mockQuickActionsService.Object);
+        var initialCount = viewModel.QuickActions.Count;
+
+        _mockQuickActionsService.Setup(x => x.GetEnabledActions())
+            .Returns(new List<QuickActionDefinition>
+            {
+                new QuickActionDefinition { Id = "export", DisplayText = "Export", Description = "Export", ShortcutText = "Ctrl+E", IsEnabled = true, Order = 0 }
+            });
+
+        // WHEN: Reloading actions
+        viewModel.LoadActions();
+
+        // THEN: Actions should be reloaded
+        viewModel.QuickActions.Should().HaveCount(1);
+        viewModel.QuickActions[0].DisplayText.Should().Contain("Export");
     }
 }
 
