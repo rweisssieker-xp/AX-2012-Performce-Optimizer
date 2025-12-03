@@ -1,0 +1,338 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.PerformanceStackView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:models="clr-namespace:AX2012PerformanceOptimizer.Core.Models.PerformanceStack;assembly=AX2012PerformanceOptimizer.Core"
+             mc:Ignorable="d"
+             d:DesignHeight="800" d:DesignWidth="1400">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="📊 Performance Stack Builder" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Multi-layer performance visualization across Database → AOS → Network → Client"
+                      Foreground="#757575" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Toolbar: Time Range Selector and Refresh -->
+        <Border Grid.Row="1" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1"
+               CornerRadius="5" Padding="15" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Time Range:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <ComboBox x:Name="TimeRangeComboBox" Width="200" Margin="0,0,20,0"
+                         SelectedIndex="0">
+                    <ComboBoxItem Content="Last Hour"/>
+                    <ComboBoxItem Content="Last 24 Hours"/>
+                    <ComboBoxItem Content="Last Week"/>
+                </ComboBox>
+                <Button Content="🔄 Refresh" Command="{Binding RefreshCommand}" 
+                       Padding="15,8" Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" 
+                          Foreground="#757575" FontStyle="Italic"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Performance Stack Visualization -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="StackPanel" Orientation="Vertical" Spacing="30">
+                
+                <!-- Client Layer -->
+                <Border x:Name="ClientLayerCard" 
+                       Background="#E8F5E9" 
+                       BorderBrush="#4CAF50" 
+                       BorderThickness="3"
+                       CornerRadius="10" 
+                       Padding="20"
+                       Cursor="Hand"
+                       MouseLeftButtonDown="LayerCard_MouseLeftButtonDown"
+                       Tag="{x:Static models:LayerType.Client}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="💻" FontSize="32" Margin="0,0,15,0"/>
+                            <StackPanel>
+                                <TextBlock Text="Client Layer" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="End-user client application" Foreground="#757575" FontSize="12"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Response Time" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Client.AvgResponseTimeMs, StringFormat='{}{0:F1} ms'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="Active Users" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Client.ActiveUsers}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="Requests/sec" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Client.RequestsPerSecond, StringFormat='{}{0:F1}'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Error Rate" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Client.ErrorRatePercent, StringFormat='{}{0:F2}%'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Flow Arrow: Client → Network -->
+                <Path Data="M 0,0 L 0,30" Stroke="#4CAF50" StrokeThickness="3" 
+                     HorizontalAlignment="Center" Margin="0,-10,0,-10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="0,0">
+                                <LineSegment Point="0,15"/>
+                                <LineSegment Point="-5,10"/>
+                                <PathFigure StartPoint="0,15">
+                                    <LineSegment Point="5,10"/>
+                                </PathFigure>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <!-- Network Layer -->
+                <Border x:Name="NetworkLayerCard" 
+                       Background="#E3F2FD" 
+                       BorderBrush="#2196F3" 
+                       BorderThickness="3"
+                       CornerRadius="10" 
+                       Padding="20"
+                       Cursor="Hand"
+                       MouseLeftButtonDown="LayerCard_MouseLeftButtonDown"
+                       Tag="{x:Static models:LayerType.Network}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="🌐" FontSize="32" Margin="0,0,15,0"/>
+                            <StackPanel>
+                                <TextBlock Text="Network Layer" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="Network communication" Foreground="#757575" FontSize="12"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Latency" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Network.AvgLatencyMs, StringFormat='{}{0:F1} ms'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="Bandwidth" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Network.BandwidthUsageMbps, StringFormat='{}{0:F1} Mbps'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="Connections" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Network.ActiveConnections}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Packet Loss" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Network.PacketLossPercent, StringFormat='{}{0:F2}%'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Flow Arrow: Network → AOS -->
+                <Path Data="M 0,0 L 0,30" Stroke="#2196F3" StrokeThickness="3" 
+                     HorizontalAlignment="Center" Margin="0,-10,0,-10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="0,0">
+                                <LineSegment Point="0,15"/>
+                                <LineSegment Point="-5,10"/>
+                                <PathFigure StartPoint="0,15">
+                                    <LineSegment Point="5,10"/>
+                                </PathFigure>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <!-- AOS Server Layer -->
+                <Border x:Name="AosLayerCard" 
+                       Background="#FFF3E0" 
+                       BorderBrush="#FF9800" 
+                       BorderThickness="3"
+                       CornerRadius="10" 
+                       Padding="20"
+                       Cursor="Hand"
+                       MouseLeftButtonDown="LayerCard_MouseLeftButtonDown"
+                       Tag="{x:Static models:LayerType.AosServer}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="🖥️" FontSize="32" Margin="0,0,15,0"/>
+                            <StackPanel>
+                                <TextBlock Text="AOS Server Layer" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="Application Object Server" Foreground="#757575" FontSize="12"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="CPU Usage" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.AosServer.CpuUsagePercent, StringFormat='{}{0:F1}%'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="Memory" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.AosServer.MemoryUsageMB, StringFormat='{}{0:N0} MB'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="Active Sessions" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.AosServer.ActiveSessions}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Response Time" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.AosServer.AvgResponseTimeMs, StringFormat='{}{0:F1} ms'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Flow Arrow: AOS → Database -->
+                <Path Data="M 0,0 L 0,30" Stroke="#FF9800" StrokeThickness="3" 
+                     HorizontalAlignment="Center" Margin="0,-10,0,-10">
+                    <Path.Data>
+                        <PathGeometry>
+                            <PathFigure StartPoint="0,0">
+                                <LineSegment Point="0,15"/>
+                                <LineSegment Point="-5,10"/>
+                                <PathFigure StartPoint="0,15">
+                                    <LineSegment Point="5,10"/>
+                                </PathFigure>
+                            </PathFigure>
+                        </PathGeometry>
+                    </Path.Data>
+                </Path>
+
+                <!-- Database Layer -->
+                <Border x:Name="DatabaseLayerCard" 
+                       Background="#FFEBEE" 
+                       BorderBrush="#F44336" 
+                       BorderThickness="3"
+                       CornerRadius="10" 
+                       Padding="20"
+                       Cursor="Hand"
+                       MouseLeftButtonDown="LayerCard_MouseLeftButtonDown"
+                       Tag="{x:Static models:LayerType.Database}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="💾" FontSize="32" Margin="0,0,15,0"/>
+                            <StackPanel>
+                                <TextBlock Text="Database Layer" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="SQL Server database" Foreground="#757575" FontSize="12"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Query Time" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Database.AvgQueryExecutionTimeMs, StringFormat='{}{0:F1} ms'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="CPU Usage" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Database.CpuUsagePercent, StringFormat='{}{0:F1}%'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="Lock Wait" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Database.AvgLockWaitTimeMs, StringFormat='{}{0:F1} ms'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="I/O Ops/sec" FontSize="11" Foreground="#757575"/>
+                                <TextBlock Text="{Binding StackData.Database.IoOperationsPerSecond, StringFormat='{}{0:F1}'}" 
+                                          FontSize="16" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bottleneck Summary Panel -->
+        <Border Grid.Row="3" Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="2"
+               CornerRadius="10" Padding="15" Margin="0,20,0,0">
+            <StackPanel>
+                <TextBlock Text="⚠️ Detected Bottlenecks" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                <ItemsControl ItemsSource="{Binding Bottlenecks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="White" BorderBrush="#FF9800" 
+                                   BorderThickness="2" CornerRadius="5" Padding="10" Margin="0,0,0,5">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Layer}" FontWeight="Bold" Width="100"/>
+                                    <TextBlock Text="{Binding Description}" Margin="10,0,0,0" Width="300"/>
+                                    <TextBlock Text="{Binding Severity}" Margin="10,0,0,0" Width="80"/>
+                                    <TextBlock Text="{Binding ImpactScore, StringFormat='Impact: {0:F1}'}" 
+                                              Margin="10,0,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="No bottlenecks detected" 
+                          Visibility="{Binding Bottlenecks.Count, Converter={x:Static BooleanToVisibilityConverter.Default}}"
+                          Foreground="#757575" FontStyle="Italic" Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+</UserControl>

@@ -1,9 +1,12 @@
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Windows;
 using AX2012PerformanceOptimizer.Core.Services;
+using AX2012PerformanceOptimizer.Core.Services.PerformanceStack;
+using AX2012PerformanceOptimizer.Core.Services.QuickFix;
 using AX2012PerformanceOptimizer.Data.SqlServer;
 using AX2012PerformanceOptimizer.Data.AxConnector;
 using AX2012PerformanceOptimizer.Data.Configuration;
@@ -21,6 +24,9 @@ public partial class App : Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
+                // Memory Cache
+                services.AddMemoryCache();
+
                 // Configuration
                 services.AddSingleton<IConfigurationService, ConfigurationService>();
 
@@ -160,6 +166,26 @@ public partial class App : Application
                 {
                     var logger = sp.GetRequiredService<ILogger<QueryClusteringService>>();
                     return new QueryClusteringService(logger);
+                });
+
+                // NEW: Performance Stack Service
+                services.AddSingleton<IPerformanceStackService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<PerformanceStackService>>();
+                    var sqlMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var aosMonitor = sp.GetRequiredService<IAosMonitorService>();
+                    return new PerformanceStackService(sqlMonitor, aosMonitor, logger);
+                });
+
+                // NEW: Quick Fix Service
+                services.AddSingleton<IQuickFixService>(sp =>
+                {
+                    var logger = sp.GetRequiredService<ILogger<QuickFixService>>();
+                    var recommendationEngine = sp.GetRequiredService<IRecommendationEngine>();
+                    var sqlMonitor = sp.GetRequiredService<ISqlQueryMonitorService>();
+                    var databaseStats = sp.GetRequiredService<IDatabaseStatsService>();
+                    var cache = sp.GetRequiredService<IMemoryCache>();
+                    return new QuickFixService(recommendationEngine, sqlMonitor, databaseStats, cache, logger);
                 });
 
                 // PHASE 1 AI FEATURES: Natural Language Query Assistant (with real data services)
@@ -332,6 +358,16 @@ public partial class App : Application
                 // PHASE 1 QUICK WINS: ViewModels
                 services.AddTransient<ExecutiveScorecardViewModel>();
                 services.AddTransient<QuickActionsPanelViewModel>();
+
+                // NEW: Performance Stack ViewModels
+                services.AddTransient<PerformanceStackViewModel>();
+                services.AddTransient<LayerDetailViewModel>();
+
+                // NEW: Chain Reaction ViewModel
+                services.AddTransient<ChainReactionViewModel>();
+
+                // NEW: Quick-Fix ViewModel
+                services.AddTransient<QuickFixViewModel>();
 
                 // 🚀 INNOVATIVE USP FEATURES: ViewModels
                 services.AddTransient<PerformanceDnaViewModel>();

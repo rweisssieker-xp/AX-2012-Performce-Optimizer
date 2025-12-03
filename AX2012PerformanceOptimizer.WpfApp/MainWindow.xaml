@@ -44,14 +44,43 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Background="#2C3E50" Padding="15">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="📊" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <TextBlock Text="AX 2012 Performance Optimizer" 
-                          FontSize="20" 
-                          FontWeight="Bold" 
-                          Foreground="White"
-                          VerticalAlignment="Center"/>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="📊" FontSize="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="AX 2012 Performance Optimizer" 
+                              FontSize="20" 
+                              FontWeight="Bold" 
+                              Foreground="White"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <Button Grid.Column="1" 
+                       Content="⚡ Quick-Fix" 
+                       x:Name="QuickFixButton"
+                       Padding="15,8"
+                       Background="#4CAF50"
+                       Foreground="White"
+                       FontWeight="Bold"
+                       Cursor="Hand"
+                       Click="QuickFixButton_Click"
+                       ToolTip="Quick-Fix Mode - Rapid optimization suggestions (Ctrl+Shift+Q)">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#4CAF50"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#45A049"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
         </Border>
 
         <!-- Main Content with Tabs -->
@@ -90,6 +119,14 @@
 
             <TabItem Header="📊 Historical Trending">
                 <views:HistoricalTrendingView/>
+            </TabItem>
+
+            <TabItem Header="📊 Performance Stack">
+                <views:PerformanceStackView/>
+            </TabItem>
+
+            <TabItem Header="🔗 Chain Reaction">
+                <views:ChainReactionView/>
             </TabItem>
 
             <TabItem Header="🗣️ NL Assistant">

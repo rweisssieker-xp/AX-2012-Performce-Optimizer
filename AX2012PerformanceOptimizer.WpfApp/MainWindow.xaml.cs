@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using AX2012PerformanceOptimizer.WpfApp.ViewModels;
@@ -86,6 +86,24 @@ public partial class MainWindow : Window
             "Navigate to SQL Performance"
         );
 
+        // Ctrl+Shift+Q: Quick-Fix Mode
+        _keyboardShortcutService.RegisterShortcut(
+            "QuickFix",
+            ModifierKeys.Control | ModifierKeys.Shift,
+            Key.Q,
+            () => ShowQuickFixView(),
+            "Open Quick-Fix Mode"
+        );
+
+        // Ctrl+Shift+S: Survival Mode Toggle
+        _keyboardShortcutService.RegisterShortcut(
+            "SurvivalMode",
+            ModifierKeys.Control | ModifierKeys.Shift,
+            Key.S,
+            () => ToggleSurvivalMode(),
+            "Toggle Survival Mode"
+        );
+
         // F1: Help documentation
         _keyboardShortcutService.RegisterShortcut(
             "Help",
@@ -135,6 +153,22 @@ public partial class MainWindow : Window
         );
         bindings.Add(performanceBinding);
 
+        // Ctrl+Shift+Q
+        var quickFixBinding = new KeyBinding(
+            new RelayCommand(() => ShowQuickFixView()),
+            Key.Q,
+            ModifierKeys.Control | ModifierKeys.Shift
+        );
+        bindings.Add(quickFixBinding);
+
+        // Ctrl+Shift+S
+        var survivalModeBinding = new KeyBinding(
+            new RelayCommand(() => ToggleSurvivalMode()),
+            Key.S,
+            ModifierKeys.Control | ModifierKeys.Shift
+        );
+        bindings.Add(survivalModeBinding);
+
         // F1
         var helpBinding = new KeyBinding(
             new RelayCommand(() => ShowHelp()),
@@ -176,6 +210,58 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
     }
 
+    private void ShowQuickFixView()
+    {
+        // Navigate to Quick-Fix tab (will be added as a tab or modal)
+        // For now, find the Quick-Fix tab index
+        if (_mainTabControl != null)
+        {
+            for (int i = 0; i < _mainTabControl.Items.Count; i++)
+            {
+                if (_mainTabControl.Items[i] is TabItem tab && tab.Header?.ToString()?.Contains("Quick-Fix") == true)
+                {
+                    NavigateToTab(i);
+                    return;
+                }
+            }
+        }
+        
+        // If tab not found, show as modal dialog
+        var quickFixView = new Views.QuickFixView();
+        var dialog = new Window
+        {
+            Title = "⚡ Quick-Fix Mode",
+            Content = quickFixView,
+            Width = 1000,
+            Height = 700,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Owner = this
+        };
+        dialog.ShowDialog();
+    }
+
+    private void QuickFixButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowQuickFixView();
+    }
+
+    private void ToggleSurvivalMode()
+    {
+        // Navigate to Recommendations tab and toggle Survival Mode
+        if (_mainTabControl != null)
+        {
+            for (int i = 0; i < _mainTabControl.Items.Count; i++)
+            {
+                if (_mainTabControl.Items[i] is TabItem tab && tab.Header?.ToString()?.Contains("Recommendations") == true)
+                {
+                    NavigateToTab(i);
+                    // Toggle will be handled by the ViewModel when tab is selected
+                    break;
+                }
+            }
+        }
+    }
+
     private void ShowHelp()
     {
         MessageBox.Show("Help Documentation (F1)\n\nKeyboard Shortcuts:\n" +
@@ -183,6 +269,7 @@ public partial class MainWindow : Window
             "• Ctrl+E - Export Wizard\n" +
             "• Ctrl+D - Dashboard\n" +
             "• Ctrl+P - SQL Performance\n" +
+            "• Ctrl+Shift+Q - Quick-Fix Mode\n" +
             "• F1 - Help\n\n" +
             "For more information, visit the Settings tab.",
             "Help", MessageBoxButton.OK, MessageBoxImage.Information);

@@ -27,17 +27,52 @@
             </Grid.RowDefinitions>
 
             <!-- Toolbar -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                <Button Content="🔄 Refresh" Command="{Binding RefreshCommand}" 
-                       Background="#2196F3" Foreground="White" FontWeight="Bold" 
-                       Width="120" Height="35" BorderThickness="0" Cursor="Hand"/>
-                <Button Content="📋 Copy Script" Command="{Binding CopyScriptCommand}" 
-                       Background="#4CAF50" Foreground="White" FontWeight="Bold" 
-                       Width="140" Height="35" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
-                <Button Content="✅ Mark Implemented" Command="{Binding MarkAsImplementedCommand}" 
-                       Background="#FF9800" Foreground="White" FontWeight="Bold" 
-                       Width="180" Height="35" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
-            </StackPanel>
+            <Border Grid.Row="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1"
+                   CornerRadius="5" Padding="15" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="🔄 Refresh" Command="{Binding RefreshCommand}" 
+                           Background="#2196F3" Foreground="White" FontWeight="Bold" 
+                           Width="120" Height="35" BorderThickness="0" Cursor="Hand"/>
+                    <Button Content="📋 Copy Script" Command="{Binding CopyScriptCommand}" 
+                           Background="#4CAF50" Foreground="White" FontWeight="Bold" 
+                           Width="140" Height="35" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+                    <Button Content="✅ Mark Implemented" Command="{Binding MarkAsImplementedCommand}" 
+                           Background="#FF9800" Foreground="White" FontWeight="Bold" 
+                           Width="180" Height="35" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+                    
+                    <Separator Margin="20,0" Orientation="Vertical"/>
+                    
+                    <!-- Survival Mode Toggle -->
+                    <ToggleButton Content="🆘 Survival Mode" 
+                                 IsChecked="{Binding IsSurvivalModeEnabled}"
+                                 Command="{Binding ToggleSurvivalModeCommand}"
+                                 Padding="15,8"
+                                 FontWeight="Bold"
+                                 Margin="10,0,0,0"
+                                 ToolTip="Survival Mode - Show only critical optimizations (Ctrl+Shift+S)">
+                        <ToggleButton.Style>
+                            <Style TargetType="ToggleButton">
+                                <Setter Property="Background" Value="#E0E0E0"/>
+                                <Setter Property="Foreground" Value="#757575"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="Background" Value="#F44336"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+                    
+                    <!-- Filtered Count Badge -->
+                    <Border Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="1"
+                           CornerRadius="5" Padding="10,5" Margin="10,0,0,0"
+                           Visibility="{Binding IsSurvivalModeEnabled, Converter={x:Static BooleanToVisibilityConverter.Default}}">
+                        <TextBlock Text="{Binding FilteredCount, StringFormat='Showing {0} of {1}'}"
+                                  FontSize="11" FontWeight="Bold"/>
+                    </Border>
+                </StackPanel>
+            </Border>
 
             <!-- Recommendations List -->
             <Grid Grid.Row="1">
@@ -54,7 +89,20 @@
                             <Border Padding="12" Margin="0,5">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
-                                        <Border Background="#F44336" Padding="5,2" CornerRadius="3" Margin="0,0,5,0">
+                                        <Border Padding="5,2" CornerRadius="3" Margin="0,0,5,0">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Priority}" Value="Critical">
+                                                            <Setter Property="Background" Value="#F44336"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Priority}" Value="High">
+                                                            <Setter Property="Background" Value="#FF9800"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
                                             <TextBlock Text="{Binding Priority}" FontSize="11" Foreground="White" FontWeight="Bold"/>
                                         </Border>
                                         <Border Background="#E0E0E0" Padding="5,2" CornerRadius="3">

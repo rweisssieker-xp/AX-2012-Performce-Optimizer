@@ -1,0 +1,49 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.Controls.LayerCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:models="clr-namespace:AX2012PerformanceOptimizer.Core.Models.PerformanceStack;assembly=AX2012PerformanceOptimizer.Core"
+             mc:Ignorable="d"
+             d:DesignHeight="150" d:DesignWidth="1200">
+
+    <Border x:Name="MainBorder" 
+           BorderThickness="3"
+           CornerRadius="10" 
+           Padding="20"
+           Cursor="Hand"
+           MouseLeftButtonDown="Border_MouseLeftButtonDown">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                <TextBlock x:Name="IconTextBlock" FontSize="32" Margin="0,0,15,0"/>
+                <StackPanel>
+                    <TextBlock x:Name="TitleTextBlock" FontSize="18" FontWeight="Bold"/>
+                    <TextBlock x:Name="SubtitleTextBlock" Foreground="#757575" FontSize="12"/>
+                </StackPanel>
+            </StackPanel>
+            
+            <!-- Metrics Grid -->
+            <ItemsControl Grid.Row="1" x:Name="MetricsItemsControl">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0,0,10,0">
+                            <TextBlock Text="{Binding Label}" FontSize="11" Foreground="#757575"/>
+                            <TextBlock Text="{Binding Value}" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Border>
+</UserControl>

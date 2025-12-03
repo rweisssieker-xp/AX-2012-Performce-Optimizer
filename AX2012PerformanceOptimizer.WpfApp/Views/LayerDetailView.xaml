@@ -1,0 +1,47 @@
+<UserControl x:Class="AX2012PerformanceOptimizer.WpfApp.Views.LayerDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1000">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Breadcrumb Navigation -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+            <TextBlock Text="Performance Stack" Foreground="#2196F3" Cursor="Hand" 
+                      MouseLeftButtonDown="Breadcrumb_PerformanceStack_Click"/>
+            <TextBlock Text=" > " Margin="5,0" Foreground="#757575"/>
+            <TextBlock Text="{Binding LayerType, Converter={StaticResource LayerTypeToNameConverter}}" 
+                      FontWeight="Bold"/>
+        </StackPanel>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,20">
+            <TextBlock Text="{Binding LayerType, Converter={StaticResource LayerTypeToNameConverter}}" 
+                      FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Detailed metrics and diagnostics" 
+                      Foreground="#757575" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- Details Content -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <Border Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1"
+                   CornerRadius="10" Padding="20">
+                <ContentControl Content="{Binding LayerDetails}">
+                    <!-- Content will be dynamically generated based on layer type -->
+                </ContentControl>
+            </Border>
+        </ScrollViewer>
+
+        <!-- Back Button -->
+        <Button Grid.Row="2" Content="← Back" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+               Margin="0,0,0,20" Padding="15,8" Command="{Binding BackCommand}"/>
+    </Grid>
+</UserControl>

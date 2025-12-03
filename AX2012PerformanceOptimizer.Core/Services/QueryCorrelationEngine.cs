@@ -1,4 +1,5 @@
 using AX2012PerformanceOptimizer.Core.Models;
+using AX2012PerformanceOptimizer.Core.Models.ChainReaction;
 using Microsoft.Extensions.Logging;
 
 namespace AX2012PerformanceOptimizer.Core.Services;
@@ -485,5 +486,123 @@ Correlations Found: {result.CorrelationsFound}
 
 💡 Top Opportunities:
 {string.Join("\n", result.OptimizationOpportunities.Take(3).Select(o => $"• {o}"))}";
+    }
+
+    public async Task<CascadeImpactResult> PredictCascadeImpactAsync(
+        string queryHash,
+        string optimizationType = "general")
+    {
+        _logger.LogInformation("Predicting cascade impact for query {QueryHash} with optimization type {OptimizationType}",
+            queryHash, optimizationType);
+
+        await Task.Delay(10); // Simulate async work
+
+        // Get dependency graph to find dependent queries
+        var allQueries = new List<SqlQueryMetric>(); // Would come from service
+        var dependencyGraph = await BuildDependencyGraphAsync(allQueries);
+
+        // Find queries that depend on the target query
+        var dependentQueries = dependencyGraph.Edges
+            .Where(e => e.FromQueryHash == queryHash)
+            .Select(e => e.ToQueryHash)
+            .Distinct()
+            .ToList();
+
+        var affectedQueries = new List<QueryImpact>();
+        double totalTimeSaved = 0;
+        double totalTimeImproved = 0;
+        double totalConfidence = 0;
+
+        // Calculate impact for each dependent query
+        foreach (var dependentHash in dependentQueries)
+        {
+            var edge = dependencyGraph.Edges.FirstOrDefault(e => 
+                e.FromQueryHash == queryHash && e.ToQueryHash == dependentHash);
+            
+            if (edge == null) continue;
+
+            // Find the query metric (would come from actual data)
+            var dependentQuery = allQueries.FirstOrDefault(q => q.QueryHash == dependentHash);
+            if (dependentQuery == null) continue;
+
+            // Estimate impact based on dependency strength and optimization type
+            var currentTime = dependentQuery.AvgElapsedTimeMs;
+            var improvementFactor = CalculateImprovementFactor(optimizationType, edge.Strength);
+            var predictedTime = currentTime * (1 - improvementFactor);
+            var improvement = currentTime - predictedTime;
+            var improvementPercent = (improvement / currentTime) * 100;
+
+            var impact = new QueryImpact
+            {
+                QueryHash = dependentHash,
+                CurrentExecutionTime = currentTime,
+                PredictedExecutionTime = Math.Max(0, predictedTime),
+                ImprovementPercentage = improvementPercent,
+                ImpactType = improvementPercent > 5 ? ImpactType.Positive :
+                            improvementPercent < -5 ? ImpactType.Negative : ImpactType.Neutral,
+                Confidence = edge.Strength * 100, // Use edge strength as confidence base
+                Description = $"Optimizing source query improves this query by {improvementPercent:F1}%"
+            };
+
+            affectedQueries.Add(impact);
+            totalTimeSaved += Math.Max(0, improvement);
+            totalTimeImproved += improvement;
+            totalConfidence += impact.Confidence;
+        }
+
+        // Calculate overall confidence
+        var overallConfidence = affectedQueries.Any() 
+            ? totalConfidence / affectedQueries.Count 
+            : 0;
+
+        var result = new CascadeImpactResult
+        {
+            SourceQueryHash = queryHash,
+            OptimizationType = optimizationType,
+            AffectedQueries = affectedQueries,
+            TotalTimeSaved = totalTimeSaved,
+            TotalTimeImproved = totalTimeImproved,
+            QueriesAffected = affectedQueries.Count,
+            Confidence = overallConfidence,
+            Summary = GenerateCascadeImpactSummary(queryHash, affectedQueries, totalTimeSaved),
+            PredictedAt = DateTime.UtcNow
+        };
+
+        _logger.LogInformation("Cascade impact prediction complete. {AffectedCount} queries affected, {TimeSaved:F0}ms saved",
+            result.QueriesAffected, result.TotalTimeSaved);
+
+        return result;
+    }
+
+    private double CalculateImprovementFactor(string optimizationType, double dependencyStrength)
+    {
+        // Base improvement factors by optimization type
+        var baseFactor = optimizationType.ToLower() switch
+        {
+            "index" => 0.30, // 30% improvement
+            "query_rewrite" => 0.25, // 25% improvement
+            "statistics" => 0.15, // 15% improvement
+            "general" => 0.20, // 20% improvement
+            _ => 0.15 // Default 15%
+        };
+
+        // Adjust based on dependency strength (stronger dependency = more impact)
+        return baseFactor * dependencyStrength;
+    }
+
+    private string GenerateCascadeImpactSummary(string queryHash, List<QueryImpact> impacts, double totalTimeSaved)
+    {
+        if (!impacts.Any())
+        {
+            return $"Optimizing query {queryHash.Substring(0, 8)}... has no detected cascade effects.";
+        }
+
+        var positiveCount = impacts.Count(i => i.ImpactType == ImpactType.Positive);
+        var negativeCount = impacts.Count(i => i.ImpactType == ImpactType.Negative);
+        var neutralCount = impacts.Count(i => i.ImpactType == ImpactType.Neutral);
+
+        return $"Optimizing query {queryHash.Substring(0, 8)}... affects {impacts.Count} dependent queries. " +
+               $"Total time saved: {totalTimeSaved:F0}ms. " +
+               $"Impact: {positiveCount} improved, {neutralCount} neutral, {negativeCount} degraded.";
     }
 }

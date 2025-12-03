@@ -1,4 +1,5 @@
 using AX2012PerformanceOptimizer.Core.Models;
+using AX2012PerformanceOptimizer.Core.Models.ChainReaction;
 
 namespace AX2012PerformanceOptimizer.Core.Services;
 
@@ -46,6 +47,13 @@ public interface IQueryCorrelationEngine
     /// </summary>
     Task<DependencyGraph> BuildDependencyGraphAsync(
         List<SqlQueryMetric> queries);
+
+    /// <summary>
+    /// Predict cascade impact of optimizing a query on dependent queries
+    /// </summary>
+    Task<CascadeImpactResult> PredictCascadeImpactAsync(
+        string queryHash,
+        string optimizationType = "general");
 }
 
 /// <summary>
