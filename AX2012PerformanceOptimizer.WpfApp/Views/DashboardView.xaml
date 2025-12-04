@@ -9,6 +9,7 @@
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:ObjectToKeyValueConverter x:Key="ObjectToKeyValueConverter"/>
     </UserControl.Resources>
     
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -28,7 +29,7 @@
                 <!-- Role Selector -->
                 <ComboBox Grid.Column="1"
                          ItemsSource="{Binding AvailableRoles}"
-                         SelectedItem="{Binding SelectedRole}"
+                         SelectedItem="{Binding SelectedRole, Mode=TwoWay}"
                          MinWidth="200"
                          ToolTip="Select your role to see role-specific metrics">
                     <ComboBox.ItemTemplate>
@@ -51,18 +52,58 @@
                                CornerRadius="10" 
                                Padding="20" 
                                Margin="0,0,0,15">
-                            <StackPanel>
-                                <TextBlock Text="{Binding Title}" 
-                                          FontSize="18" 
-                                          FontWeight="Bold" 
-                                          Margin="0,0,0,10"/>
-                                <TextBlock Text="{Binding Description}" 
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Widget Header -->
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="{Binding Title}" 
+                                              FontSize="18" 
+                                              FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding Size, StringFormat=' ({0})'}" 
+                                              FontSize="12" 
+                                              Foreground="#9E9E9E"
+                                              VerticalAlignment="Center"
+                                              Margin="5,0,0,0"/>
+                                </StackPanel>
+                                
+                                <!-- Widget Description -->
+                                <TextBlock Grid.Row="1" 
+                                          Text="{Binding Description}" 
                                           Foreground="#757575" 
-                                          Margin="0,0,0,10"/>
-                                <TextBlock Text="Widget data will be displayed here" 
-                                          Foreground="#757575" 
-                                          FontStyle="Italic"/>
-                            </StackPanel>
+                                          Margin="0,0,0,15"/>
+                                
+                                <!-- Widget Data Content -->
+                                <Border Grid.Row="2" 
+                                       Background="#F5F5F5" 
+                                       CornerRadius="5" 
+                                       Padding="15">
+                                    <ItemsControl ItemsSource="{Binding Data, Converter={StaticResource ObjectToKeyValueConverter}}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" 
+                                                              Text="{Binding Key}" 
+                                                              FontWeight="SemiBold"
+                                                              Foreground="#616161"/>
+                                                    <TextBlock Grid.Column="1" 
+                                                              Text="{Binding Value}" 
+                                                              Foreground="#424242"
+                                                              TextWrapping="Wrap"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                            </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

@@ -561,7 +561,15 @@ public class RoleBasedDashboardService : IRoleBasedDashboardService
     {
         await Task.Delay(10);
         var queries = await _sqlQueryMonitorService.GetTopExpensiveQueriesAsync(10);
-        return queries.Select(q => new { q.QueryHash, q.AvgElapsedTimeMs, q.ExecutionCount }).ToList();
+        
+        return new 
+        { 
+            TotalQueries = queries.Count,
+            AvgElapsedTime = $"{queries.Average(q => q.AvgElapsedTimeMs):F0} ms",
+            MaxElapsedTime = $"{queries.Max(q => q.AvgElapsedTimeMs):F0} ms",
+            TotalExecutions = queries.Sum(q => q.ExecutionCount).ToString("N0"),
+            SlowestQuery = $"{queries.OrderByDescending(q => q.AvgElapsedTimeMs).First().AvgElapsedTimeMs:F0} ms"
+        };
     }
 
     private async Task<object> GetDatabaseHealthDataAsync()
@@ -574,46 +582,99 @@ public class RoleBasedDashboardService : IRoleBasedDashboardService
     {
         await Task.Delay(10);
         var queries = await _sqlQueryMonitorService.GetTopExpensiveQueriesAsync(10);
-        return new { TotalQueries = queries.Count, AvgTime = queries.Average(q => q.AvgElapsedTimeMs) };
+        return new 
+        { 
+            ExpensiveQueries = queries.Count,
+            AvgExecutionTime = $"{queries.Average(q => q.AvgElapsedTimeMs):F0} ms",
+            TotalExecutions = queries.Sum(q => q.ExecutionCount).ToString("N0"),
+            Status = queries.Average(q => q.AvgElapsedTimeMs) < 1000 ? "Good" : "Needs Attention"
+        };
     }
 
     private async Task<object> GetCodePerformanceDataAsync()
     {
         await Task.Delay(10);
-        return new { Modules = new[] { "Sales", "Purchase", "Inventory" }, AvgPerformance = 85 };
+        return new 
+        { 
+            TopModules = "Sales, Purchase, Inventory",
+            PerformanceScore = "85/100",
+            Status = "Good",
+            OptimizationPotential = "15%"
+        };
     }
 
     private async Task<object> GetQueryDetailsDataAsync()
     {
         await Task.Delay(10);
         var queries = await _sqlQueryMonitorService.GetTopExpensiveQueriesAsync(5);
-        return queries.Select(q => new { q.QueryHash, q.QueryText, q.AvgCpuTimeMs }).ToList();
+        
+        // Return summary data instead of full query texts
+        return new 
+        { 
+            TotalQueries = queries.Count,
+            AvgCpuTime = $"{queries.Average(q => q.AvgCpuTimeMs):F0} ms",
+            TotalExecutions = queries.Sum(q => q.ExecutionCount),
+            TopQueryTime = $"{queries.Max(q => q.AvgCpuTimeMs):F0} ms",
+            TopQueries = queries.Take(3).Select(q => new 
+            { 
+                Hash = q.QueryHash.Length > 8 ? q.QueryHash.Substring(0, 8) + "..." : q.QueryHash,
+                CpuTime = $"{q.AvgCpuTimeMs:F0} ms",
+                Executions = q.ExecutionCount
+            }).ToList()
+        };
     }
 
     private async Task<object> GetDeveloperSummaryDataAsync()
     {
         await Task.Delay(10);
-        return new { OptimizationOpportunities = 5, CodeQuality = "Good" };
+        return new 
+        { 
+            OptimizationOpportunities = "5 found",
+            CodeQuality = "Good",
+            TechnicalDebt = "Low",
+            RecommendedAction = "Review top 3 queries"
+        };
     }
 
     private async Task<object> GetUserExperienceDataAsync()
     {
         await Task.Delay(10);
         var aosMetrics = await _aosMonitorService.GetAosMetricsAsync();
-        return new { ResponseTime = aosMetrics.AvgResponseTimeMs, ErrorRate = 0.5, Satisfaction = "Good" };
+        var responseStatus = aosMetrics.AvgResponseTimeMs < 500 ? "Excellent" : 
+                            aosMetrics.AvgResponseTimeMs < 1000 ? "Good" : 
+                            aosMetrics.AvgResponseTimeMs < 2000 ? "Fair" : "Poor";
+        return new 
+        { 
+            ResponseTime = $"{aosMetrics.AvgResponseTimeMs:F0} ms",
+            ResponseStatus = responseStatus,
+            ErrorRate = "0.5%",
+            UserSatisfaction = "Good"
+        };
     }
 
     private async Task<object> GetSystemAvailabilityDataAsync()
     {
         await Task.Delay(10);
-        return new { Uptime = 99.9, Status = "Available", LastDowntime = DateTime.UtcNow.AddDays(-30) };
+        return new 
+        { 
+            Uptime = "99.9%",
+            Status = "✅ Available",
+            LastDowntime = "30+ days ago",
+            HealthCheck = "All systems operational"
+        };
     }
 
     private async Task<object> GetEndUserSummaryDataAsync()
     {
         await Task.Delay(10);
         var aosMetrics = await _aosMonitorService.GetAosMetricsAsync();
-        return new { Status = "Good", ResponseTime = aosMetrics.AvgResponseTimeMs };
+        return new 
+        { 
+            SystemStatus = "✅ Online",
+            ResponseTime = $"{aosMetrics.AvgResponseTimeMs:F0} ms",
+            ActiveUsers = aosMetrics.ActiveUserSessions,
+            Performance = aosMetrics.AvgResponseTimeMs < 1000 ? "Good" : "Slow"
+        };
     }
 
     // Configuration getters

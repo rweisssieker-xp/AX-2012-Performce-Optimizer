@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <Description>Platform-agnostic ViewModels for AX2012 Performance Optimizer. Can be used with WPF, Blazor, or any other UI framework.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AX2012PerformanceOptimizer.Core\AX2012PerformanceOptimizer.Core.csproj" />
+    <ProjectReference Include="..\AX2012PerformanceOptimizer.Data\AX2012PerformanceOptimizer.Data.csproj" />
+  </ItemGroup>
+
+</Project>
